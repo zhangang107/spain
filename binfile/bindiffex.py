@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-03-30T15:36:09+08:00
+# @Last modified time: 2018-04-02T15:08:14+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -25,13 +25,13 @@ class BinDiffEx(object):
         通过'./differ'命令调用BinDiff生成格式数据库
         提供筛选查询方法隐藏数据库
     '''
-    def __init__(self, filename=None, path=None):
+    def __init__(self, filenames, diff_dir=None):
         '''
-        :param path: BinDiff 所得数据库路径
+        :param diff_name: BinDiff 所得数据库名
         :type path: string
         '''
-        self.path = path
-        self.filenames = []
+        self.diff_dir = diff_dir
+        self.filenames = filenames
         self.exefilenames = []
         self.func_sums = []
         self.cmp_func_sum = 0
@@ -109,7 +109,7 @@ class BinDiffEx(object):
         '''
         内部函数，连接数据库，获取基本属性
         '''
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.diff_name)
         cur = conn.cursor()
         '''
         获取 名称，函数， 基本快信息
@@ -165,7 +165,7 @@ class BinDiffEx(object):
         '''
         与阈值比较， 获取初始候选函数地址对
         '''
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.diff_name)
         cur = conn.cursor()
         rows = cur.execute('SELECT address1, address2 FROM function WHERE similarity < {0}'.format(threshold))
         self.cmpedaddrs = [(row[0], row[1]) for row in rows]

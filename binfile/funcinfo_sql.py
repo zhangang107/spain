@@ -5,12 +5,38 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T13:54:20+08:00
+# @Last modified time: 2018-04-02T14:23:52+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
 from funcinfo_json import FunInfoJson
 from functools import wraps
+
+def _cumulate_item(item_list):
+    '''
+    统计
+    '''
+    item_dic = {}
+    for item in item_list:
+        if item not in item_dic:
+            item_dic[item] = 1
+        else:
+            item_dic[item] += 1
+    return item_dic
+
+def _handle_call(mnem_list, opnds_list):
+    '''
+    识别并统计跳转指令
+    '''
+    # arm call
+    call_dic = {}
+    for i in range(len(mnem_list)):
+        if mnem_list[i] == 'BL':
+            if 'BL' not in call_dic:
+                call_dic['BL'] = [opnds_list[i]]
+            else:
+                call_dic['BL'].append(opnds_list[i])
+    return call_dic
 
 class FunInfoSql(object):
     '''
@@ -76,10 +102,36 @@ class FunInfoSql(object):
             self.funcinfo_json_o.write_func(address_str, self.db)
 
     @check_db
-    def query_func_info(self, address):
+    def query_func_info(self, address, isPatch=False):
         '''
-        查询获取函数信息
+        查询获取函数信息，获取边以及各个节点内部汇编信息
         '''
+        _nodes, funcname = self.query_func_nodes(address, isPatch)
+        edges = []
+        nodes = {}
+        for _n in _nodes:
+            src = _n.block_id
+            for dst in eval(_n.child):
+                edges.append([src, int(dst)])
+            node[src] = {'funcname':funcname, 'startEA': _n.block_start,
+                            'endEA':_n.block_end}
+            _asms = self.query_node_asms(_n, isPatch)
+            asms, sizes, mnem_list, opnds_list, optype_list = [], [], [], [], []
+            for a in _asms:
+                asms.append(a.asm)
+                sizes.append(a.size)
+                mnem_list.append(a.mnem)
+                opnds_list.append(a.opnds)
+                optype_list.append(a.optypes)
+            nodes[src]['asms'] = asms
+            nodes[src]['sizes'] = sizes
+            nodes[src]['power'] = len(asms)
+            nodes[src]['mnem'] = _cumulate_item(mnem_list)
+            nodes[src]['mnem_list'] = mnem_list
+            nodes[src]['optype'] = _cumulate_item(optype for optlist in optype_list for
+                                            optype in eval(optlist))
+            nodes[src]['call'] = _handle_call(mnem_list, opnds_list)
+        return nodes, edges, funcname
 
     @check_db
     def query_func_nodes(self, address, isPatch=False):
@@ -89,7 +141,7 @@ class FunInfoSql(object):
         _node = self.query_node(address, isPatch)
         funcname = _node.funcname
         nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNode=True)
-        return nodes
+        return nodes, funcname
 
     @check_db
     def query_node(self, address, isPatch=False):
@@ -99,9 +151,9 @@ class FunInfoSql(object):
         return self.db.query_nodes(address, isPatch)
 
     @check_db
-    def query_func_asms(self, node, isPatch=False):
+    def query_node_asms(self, node, isPatch=False):
         '''
-        查询获取汇编信息
+        查询获取节点汇编信息
         '''
         return self.db.query_asms(node, isPatch=False)
 
