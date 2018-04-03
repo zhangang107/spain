@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T15:51:58+08:00
+# @Last modified time: 2018-04-03T11:29:45+08:00
 # @Copyright: Copyright by USTC
 
 from bindiffex import BinDiffEx
@@ -35,15 +35,21 @@ class BinFile(object):
         FunInfoSql.create_db()
         self.funcinfosql = FunInfoSql(filenames)
         self.cmpedaddrs = None
+        self.current_func = 0
 
     def diff(self):
+        '''
+        完成IDC调用和BinDiff调用，生成BinDiff数据库
+        '''
         self.bindiff.differ()
 
     def diff_filter(self, threshold=None):
+        '''
+        bindiff筛选，获取初始候选函数对
+        '''
         if threshold is None:
             threshold = self.diff_threshold
-        self.bindiff.getcmped(threshold)
-        self.cmpedaddrs = self.bindiff.cmpedaddrs
+        self.cmpedaddrs = self.bindiff.getcmped(threshold)
         return len(self.cmpedaddrs)
 
     def init_funcinfo(self):
@@ -75,10 +81,36 @@ class BinFile(object):
         _funcgraph_p = self._get_single_graph(address_p, isPatch=True)
         return _funcgraph_o, _funcgraph_p
 
-    def get_func_graphs(self):
+    def next_func_graphs(self):
         '''
         获取函数图对，使用生成器
         '''
         for address_o, address_p in self.cmpedaddrs:
             _funcgraph_o, _funcgraph_p = self.get_single_graphs(address_o, address_p)
             yield _funcgraph_o, _funcgraph_p
+            self.current_func += 1
+
+    def _get_func_by_name(self, name):
+        '''
+        通过函数名称获取指定函数图对
+        '''
+        pass
+
+    def _get_func_by_index(self, index):
+        '''
+        通过函数在初始候选中的索引获取函数图对
+        '''
+        address_o, address_p = self.cmpedaddrs[index]
+        _funcgraph_o, _funcgraph_p = self.get_single_graphs(address_o, address_p)
+        return _funcgraph_o, _funcgraph_p
+
+    def get_func_graphs(self, arg):
+        '''
+        获取指定函数图对
+        当arg为int时，通过索引指定
+        当arg为str时，通过函数名称指定
+        '''
+        if isinstance(arg, int):
+            return self._get_func_by_index(arg)
+        elif isinstance(arg, str):
+            return self._get_func_by_name(arg)

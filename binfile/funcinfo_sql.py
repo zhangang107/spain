@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T14:23:52+08:00
+# @Last modified time: 2018-04-03T11:24:37+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -101,12 +101,10 @@ class FunInfoSql(object):
         else:
             self.funcinfo_json_o.write_func(address_str, self.db)
 
-    @check_db
-    def query_func_info(self, address, isPatch=False):
+    def _get_func_info(self, _nodes, funcname):
         '''
-        查询获取函数信息，获取边以及各个节点内部汇编信息
+        依据数据库结果_nodes，构造函数图类所需节点nodes,边edges,以及函数名
         '''
-        _nodes, funcname = self.query_func_nodes(address, isPatch)
         edges = []
         nodes = {}
         for _n in _nodes:
@@ -132,6 +130,22 @@ class FunInfoSql(object):
                                             optype in eval(optlist))
             nodes[src]['call'] = _handle_call(mnem_list, opnds_list)
         return nodes, edges, funcname
+
+    @check_db
+    def query_func_info(self, arg, isPatch=False):
+        '''
+        查询获取函数信息，获取边以及各个节点内部汇编信息
+        @arg 不定参数   当arg为int时，即是地址address
+                       当arg为str时，即是函数名funcname
+        '''
+        if isinstance(arg, int):
+            address = arg
+            _nodes, funcname = self.query_func_nodes(address, isPatch)
+            return self._get_func_info(_nodes, funcname)
+        elif isinstance(arg, str):
+            funcname = arg
+            _nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNode=True)
+            return self._get_func_info(_nodes, funcname)
 
     @check_db
     def query_func_nodes(self, address, isPatch=False):

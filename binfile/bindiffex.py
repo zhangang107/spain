@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T15:08:14+08:00
+# @Last modified time: 2018-04-03T10:48:19+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -168,5 +168,5 @@ class BinDiffEx(object):
         conn = sqlite3.connect(self.diff_name)
         cur = conn.cursor()
         rows = cur.execute('SELECT address1, address2 FROM function WHERE similarity < {0}'.format(threshold))
-        self.cmpedaddrs = [(row[0], row[1]) for row in rows]
-        return len(self.cmpedaddrs)
+        cmpedaddrs = [(row[0], row[1]) for row in rows]
+        return cmpedaddrs

@@ -5,6 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: __init__.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T15:53:23+08:00
+# @Last modified time: 2018-04-03T10:30:10+08:00
 # @Copyright: Copyright by USTC
 
+from cfg_filter import CFG
