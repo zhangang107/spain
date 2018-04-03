@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T11:29:45+08:00
+# @Last modified time: 2018-04-03T15:48:04+08:00
 # @Copyright: Copyright by USTC
 
 from bindiffex import BinDiffEx
@@ -61,24 +61,24 @@ class BinFile(object):
         self.funcinfosql.add_data(address_o, isPatch=False)
         self.funcinfosql.add_data(address_p, isPatch=True)
 
-    def _get_single_graph(self, address, isPatch):
+    def _get_single_graph(self, arg, isPatch):
         '''
         获取一个函数图
-        @param address 函数地址
+        @param arg 函数地址或者函数名称
         @param isPatch 是否是补丁
         '''
-        nodes, edges, funcname = self.funcinfosql.query_func_info(address_o, isPatch)
-        _funcgraph = FuncGraph(funcname, nodes, edges)
+        funcname, address, nodes, edges = self.funcinfosql.query_func_info(arg, isPatch)
+        _funcgraph = FuncGraph(funcname, address, nodes, edges)
         return _funcgraph
 
-    def get_single_graphs(self, address_o, address_p):
+    def get_single_graphs(self, arg_o, arg_p):
         '''
         获取单对函数图
-        @param address_o 原函数地址
-        @param address_p 补丁函数地址
+        @param arg_o 原函数地址或者函数名称
+        @param arg_p 补丁函数地址或函数名称
         '''
-        _funcgraph_o = self._get_single_graph(address_o, isPatch=False)
-        _funcgraph_p = self._get_single_graph(address_p, isPatch=True)
+        _funcgraph_o = self._get_single_graph(arg_o, isPatch=False)
+        _funcgraph_p = self._get_single_graph(arg_p, isPatch=True)
         return _funcgraph_o, _funcgraph_p
 
     def next_func_graphs(self):
@@ -94,7 +94,8 @@ class BinFile(object):
         '''
         通过函数名称获取指定函数图对
         '''
-        pass
+        _funcgraph_o, _funcgraph_p = self.get_single_graphs(name, name)
+        return _funcgraph_o, _funcgraph_p
 
     def _get_func_by_index(self, index):
         '''

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: func_graph.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T14:47:23+08:00
+# @Last modified time: 2018-04-03T15:46:25+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 
@@ -14,12 +14,14 @@ class FuncGraph(nx.DiGraph):
     函数图类
     将函数基本块（即节点）以及汇编信息封装到有向图中,汇编信息存储在节点属性中
     '''
-    def __init__(self, funcname, nodes=None, edges=None):
+    def __init__(self, funcname, address, nodes=None, edges=None):
         self.funcname = funcname
+        self.address = address
         self._nodes = nodes
         self._edges = edges
         if nodes and edges:
             self._create(nodes, edges)
+
 
     def _create(self, nodes, edges):
         '''

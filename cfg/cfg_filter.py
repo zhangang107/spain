@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: cfg_filter.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T17:10:03+08:00
+# @Last modified time: 2018-04-03T15:57:06+08:00
 # @Copyright: Copyright by USTC
 
 from post_dom import Dom
@@ -21,12 +21,27 @@ class CFG(object):
         self.func_graph = func_graph.copy()
         self._graph = self.func_graph.copy()
         self.nodesXYZ = {}
+        self.is_calculated = False
+        self.funcname = self.func_graph.funcname
+        self.address = self.func_graph.address
+
+    def calculate(self):
+        '''
+        一键计算
+        init_data[x坐标起始值， 起始节点索引]
+        '''
+        self.get_dom()
+        self._insert_endnode()
+        self.get_cyclesnode()
+        init_data = {'x':1, 'node_id':0}
+        node_visited = [init_data['node_id']]
+        self.create_xyz(init_data, node_visited)
 
     def get_dom(self):
         '''
         获取后支配点
         '''
-        graph_dom = Dom(self.func_graph)
+        graph_dom = Dom(self._graph)
         graph_dom.run()
         post_dom = graph_dom.get_post_dominators()
         dom_list = graph_dom.get_rdf()
@@ -37,14 +52,14 @@ class CFG(object):
         获取环路点
         '''
         cycles_node = set()
-        for s in nx.strongly_connected_component_subgraphs(self.func_graph):
+        for s in nx.strongly_connected_component_subgraphs(self._graph):
             if len(s.node()) > 1:
                 for node in s.node():
                     if node not in cycles_node:
                         cycles_node.add(node)
         self.cycles_node = cycles_node
 
-    def _InsertEndNode(self):
+    def _insert_endnode(self):
         '''
         在临时函数图中添加人工节点
         '''
@@ -65,7 +80,7 @@ class CFG(object):
         else:
             return 0
 
-    def _GetBranchList(self, node_visited, parent_node, start_node):
+    def _get_branchlsit(self, node_visited, parent_node, start_node):
         '''
         获取分支信息
         @param node_visited 已处理节点
@@ -77,7 +92,7 @@ class CFG(object):
         '''
         # Get the length of Branch
         # print 'call branclist func parent_node %s , start_node %s'%(parent_node,start_node)
-        graph = self.func_graph
+        graph = self._graph
         dom_list = self.dom_list
         branchlist = [start_node]
         branchlens = []
@@ -102,17 +117,17 @@ class CFG(object):
         return (branchlist, branchlens, FirstInsLen)
 
 
-    def CreateXYZ(self, init_x, node_visited):
+    def create_xyz(self, init_data, node_visited):
         '''
         获取三维坐标
-        @param init_x 初始节点信息
+        @param init_data 初始信息 init_data[x坐标起始值， 起始节点索引]
         @param node_visited 已处理节点
         '''
-        graph = self.func_graph
+        self.is_calculated = True
+        graph = self._graph
         post_dom = self.dom_list
-        node = init_x[1]
+        node = init_data['node_id']
         # print 'node: %s' % node
-        cycles_node = init_x[2]
         dom_is_visited = False
         node_succs = []
         y = 0
@@ -121,24 +136,24 @@ class CFG(object):
             if succ not in node_visited:
                 node_succs.append(succ)
         succslen = len(node_succs)
-        z = self._getz(node, cycles_node)
-        # nodeXYZ = {'nodeID':node, 'X':init_x[0], 'Y':y, 'Z':z}
+        z = self._getz(node)
+        # nodeXYZ = {'nodeID':node, 'X':init_data['x'], 'Y':y, 'Z':z}
         # nodesXYZ.append(nodeXYZ)
-        self.nodesXYZ[node] = {'X':init_x[0], 'Y':y, 'Z':z}
-        init_x[0] += 1
+        self.nodesXYZ[node] = {'X':init_data['x'], 'Y':y, 'Z':z}
+        init_data['x'] += 1
         #node_visited.append(node)
         if succslen == 0:
             return
         elif succslen == 1:
             succ_node = node_succs.pop()
             node_visited.append(succ_node)
-            init_x[1] = succ_node
-            self.CreateXYZ(init_x, node_visited)
+            init_data['node_id'] = succ_node
+            self.create_xyz(init_data, node_visited)
         else:
             branchs = []
             for succ in node_succs:
                 if succ != post_dom[node]:
-                    branchlist, branchlens, FirstInsLen = self._GetBranchList(
+                    branchlist, branchlens, FirstInsLen = self._get_branchlsit(
                                                 node_visited, node, succ)
                     branchs.append({'node':succ,'len':len(branchlist),'nodes':branchlist,
                                     'size':sum(branchlens),'sizelist':branchlens,
@@ -152,18 +167,20 @@ class CFG(object):
                 succ_node = branch['node']
                 if succ_node not in node_visited:
                     node_visited.append(succ_node)
-                    init_x[1] = succ_node
-                    self.CreateXYZ(init_x, node_visited)
+                    init_data['node_id'] = succ_node
+                    self.create_xyz(init_data, node_visited)
             if not dom_is_visited:
-                init_x[1] = post_dom[node]
-                self.CreateXYZ(init_x, node_visited)
+                init_data['node_id'] = post_dom[node]
+                self.create_xyz(init_data, node_visited)
 
 
-    def GetCentroid(self):
+    def get_centroid(self):
         '''
         获取质心
         '''
-        graph = self.func_graph
+        if not self.is_calculated:
+            self.calculate()
+        graph = self._graph
         cx = 0.0
         cy = 0.0
         cz = 0.0
@@ -193,8 +210,8 @@ class CFG(object):
         比较质心是否相同
         @param cfg_p 另一个cfg对象
         '''
-        cx_o, cy_o, cz_o, w_o = self.GetCentroid()
-        cx_p, cy_p, cz_p, w_p = cfg_p.GetCentroid()
+        cx_o, cy_o, cz_o, w_o = self.get_centroid()
+        cx_p, cy_p, cz_p, w_p = cfg_p.get_centroid()
         def _cal(x_o, x_p):
             if float(x_o + x_p) == .0:
                 return .0

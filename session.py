@@ -5,11 +5,12 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T11:25:18+08:00
+# @Last modified time: 2018-04-03T16:01:42+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
 from cfg import CFG
+from block import Trace
 
 class Session(object):
     '''
@@ -39,7 +40,12 @@ class Session(object):
         self.funcinfo_path = funcinfo_path
         self.binfile = BinFile(self.filenames, diff_path=diff_name)
         self._idc_bindiff()
-        self.cfg = None
+        self.cfg = {'origin':None, 'patch':None}
+        self.cur_func = {'origin':None, 'patch':None}
+        self.cur_blocks = {}
+        self.func_cfg_centroid = {}
+        self.func_generator = self.binfile.next_func_graphs()
+        self.candidate_func = []
 
     def _idc_bindiff(self):
         '''
@@ -57,14 +63,35 @@ class Session(object):
         '''
         cfg筛选，获取候选函数
         '''
-        
+        if arg is None:
+            # 默认获取下一对候选函数
+            self.cur_func['origin'], self.cur_func['patch'] = self.func_generator.next()
+        elif isinstance(arg, int) or isinstance(arg, str):
+            # 按地址或函数名获取指定候选函数
+            self.cur_func['origin'], self.cur_func['patch'] = self.binfile.get_func_graphs(arg)
+        self.cfg['origin'] = CFG(self.cur_func['origin'])
+        self.cfg['patch'] = CFG(self.cur_func['patch'])
+        funcname = self.cfg['origin'].funcname
+        self.func_cfg_centroid[funcname] = {
+                'origin': self.cfg['origin'].get_centroid(),
+                'patch': self.cfg['patch'].get_centroid()}
+        if self.cfg['origin'].same_with(self.cfg['patch']):
+            self.candidate_func[funcname] = {
+                'origin': self.cfg['origin'].address,
+                'patch': self.cfg['patch'].address}
 
-    def blocks_locate(self):
+    def blocks_locate(self, arg=None):
         '''
         补丁基本块定位
         '''
+        self.cur_blocks['funcname'] = self.cfg['origin'].funcname
+        self.cur_blocks['address_o'] = self.cfg['origin'].address
+        self.cur_blocks['address_p'] = self.cfg['patch'].address
+        traces = Trace(self.cfg['origin'].func_graph, self.cfg['patch'].func_graph)
+        self.cur_blocks['traces'] = traces.get_trace()
 
     def seman_analysis(self):
         '''
         语义分析
         '''
+        pass

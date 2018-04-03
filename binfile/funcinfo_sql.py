@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T11:24:37+08:00
+# @Last modified time: 2018-04-03T15:49:12+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -129,7 +129,8 @@ class FunInfoSql(object):
             nodes[src]['optype'] = _cumulate_item(optype for optlist in optype_list for
                                             optype in eval(optlist))
             nodes[src]['call'] = _handle_call(mnem_list, opnds_list)
-        return nodes, edges, funcname
+        address = node[0]['startEA']
+        return funcname, address, nodes, edges
 
     @check_db
     def query_func_info(self, arg, isPatch=False):
