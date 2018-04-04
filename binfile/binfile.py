@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T15:48:04+08:00
+# @Last modified time: 2018-04-04T09:53:32+08:00
 # @Copyright: Copyright by USTC
 
 from bindiffex import BinDiffEx
@@ -17,21 +17,22 @@ class BinFile(object):
     二进制处理类，统一整个预处理工作
     负责将二进制文件最总转换成数据库信息存储，并提供函数图类迭代调用
     '''
-    def __init__(self, filenames, diff_threshold=1.0, diff_path=None, json_path=None,
-                    funcinfo_path=None):
+    def __init__(self, filenames, diff_threshold=1.0, diff_dir=None, sql_name=None,
+            json_path=None, funcinfo_path=None):
         '''
         @param filenames 二进制文件名，长度为2，filenames[0]为原文件，filenames[1]为补丁文件
         @param diff_threshold BinDiff筛选阈值
-        @param diff_path bindiff结果数据库路径
+        @param diff_dir bindiff结果数据库路径
+        @param sql_name bindiff结果数据库名称
         @param json_path json文件路径
         @param funcinfo_path 最终函数信息数据库路径
         '''
         self.filenames = filenames
         self.diff_threshold = diff_threshold
-        self.diff_path = diff_path
+        self.diff_dir = diff_dir
         self.json_path = json_path
         self.funcinfo_path = funcinfo_path
-        self.bindiff = BinDiffEx(filenames, diff_path)
+        self.bindiff = BinDiffEx(filenames, diff_dir=diff_dir, sql_name=sql_name)
         FunInfoSql.create_db()
         self.funcinfosql = FunInfoSql(filenames)
         self.cmpedaddrs = None

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T10:48:19+08:00
+# @Last modified time: 2018-04-04T10:15:31+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -25,23 +25,32 @@ class BinDiffEx(object):
         通过'./differ'命令调用BinDiff生成格式数据库
         提供筛选查询方法隐藏数据库
     '''
-    def __init__(self, filenames, diff_dir=None):
+    def __init__(self, filenames, diff_dir=None, sql_name=None):
         '''
         :param diff_name: BinDiff 所得数据库名
         :type path: string
         '''
         self.diff_dir = diff_dir
+        self.sql_name = sql_name
         self.filenames = filenames
         self.exefilenames = []
+        self._efilenames = {'origin':None, 'patch':None}
         self.func_sums = []
         self.cmp_func_sum = 0
         self.functions = []
         self.libfunctions = []
         self.basicblocks = []
         self.cmpedaddrs = None
+        if self.diff_dir is None:
+            self.diff_dir = './'
+        if self.sql_name is None:
+            self.sql_name = 'diff.db'
+        if self._check_filenames():
+            self._split_file()
+        self.diff_name = os.path.join(self.diff_dir, self.sql_name)
 
     def _check_filenames(self):
-        if len(filenames) == 2:
+        if len(self.filenames) == 2:
             return True
         else:
             return False
@@ -73,7 +82,7 @@ class BinDiffEx(object):
                 cmd = 'TVHEADLESS=1 idal -A -Sbindiff_export.idc {}'.format(filename)
                 (status, output) = commands.getstatusoutput(cmd)
                 if status != 0:
-                    raise IdcException('call idc wrong!')
+                    raise BinException('call idc wrong!')
         return True
 
     def _split_file(self):
@@ -81,9 +90,9 @@ class BinDiffEx(object):
         分解文件名
         '''
         _, exef1 = os.path.split(self.filenames[0])
-        self.exefilenames[0] = exef1
+        self._efilenames['origin'] = exef1
         _, exef2 = os.path.split(self.filenames[1])
-        self.exefilenames[1] = exef2
+        self._efilenames['patch'] = exef2
 
     def _call_diff(self):
         '''
@@ -91,18 +100,20 @@ class BinDiffEx(object):
         '''
         self._split_file()
         export_files = []
-        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self.exefilenames[0]))
-        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self.exefilenames[1]))
+        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self._efilenames['origin']))
+        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self._efilenames['patch']))
         if self._check_files(export_files):
-            cmd = './differ --primary={0} --secondary={1} --output_dir={2}'.format(
-                        export_files[0], export_files[1], self.out_dir)
+            cmd = '../differ --primary={0} --secondary={1} --output_dir={2}'.format(
+                        export_files[0], export_files[1], self.diff_dir)
+            print(cmd)
             (status, output) = commands.getstatusoutput(cmd)
             if status != 0:
-                raise IdcException('differ wrong!')
-            rename_cmd = 'mv {0}*.BinDiff {0}{1}'.format(self.out_dir, self.sql_name)
-            (status, output) = commands.getstatusoutput(cmd)
+                raise BinException('differ wrong!')
+            rename_cmd = 'mv {0}*.BinDiff {0}{1}'.format(self.diff_dir, self.sql_name)
+            print(rename_cmd)
+            (status, output) = commands.getstatusoutput(rename_cmd)
             if status != 0:
-                raise IdcException('rename sql wrong!')
+                raise BinException('rename sql wrong!')
         return True
 
     def _getattrs(self):
@@ -170,3 +181,9 @@ class BinDiffEx(object):
         rows = cur.execute('SELECT address1, address2 FROM function WHERE similarity < {0}'.format(threshold))
         cmpedaddrs = [(row[0], row[1]) for row in rows]
         return cmpedaddrs
+
+'''
+v = [8, 10, 6, 3, 7, 2]
+w = [4, 6, 2, 2, 5, 1]
+c = 12
+'''

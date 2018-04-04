@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T15:49:12+08:00
+# @Last modified time: 2018-04-04T10:20:12+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -66,6 +66,7 @@ class FunInfoSql(object):
             cls.db = DataDb(cls.sql_name)
         else:
             cls.db = DataDb()
+        cls.db.create_tb()
 
     def check_db(f):
         '''
