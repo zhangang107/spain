@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: setting.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T11:45:44+08:00
+# @Last modified time: 2018-04-04T16:26:10+08:00
 # @Copyright: Copyright by USTC
 
 import os
@@ -14,7 +14,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 输出文件目录相对BASE_DIR路径
-OUT_DIR = 'data/ouput'
+OUT_DIR = 'data/output'
 
 # bindiff输出文件路径名称
 BINDIFF = {

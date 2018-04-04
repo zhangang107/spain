@@ -5,11 +5,17 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_json.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T09:49:57+08:00
+# @Last modified time: 2018-04-04T20:47:35+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import tb_nodes_o, tb_nodes_p, tb_asms_o, tb_asms_p
 import os
+import sys
+import commands
+import json
+
+sys.path.append('../')
+from setting import BASE_DIR
 
 class FunInfoJson(object):
     '''
@@ -20,25 +26,31 @@ class FunInfoJson(object):
     提供的外部调用为：
         二进制文件到函数信息数据库
     '''
-    def __init__(self, filename, isPatch=False, jsonname=None):
+    script = os.path.join(BASE_DIR, 'spain/binfile/idaPython/getinfo_fromIDA.py')
+    def __init__(self, filename, isPatch=False, json_name=None, json_dir=None):
         '''
         @param filename 二进制长文件名
         @param isPatch 是否是补丁文件
-        @param jsonname 生成的json文件名
+        @param json_name 生成的json文件名
+        @param json_dir 生成json文件目录
         '''
         self.filename = filename
         self.exefilename = self._split_file()
-        self.pwd = os.getcwd()
-        self.result_d = os.path.join(self.pwd, 'data/reuslt/')
-        self.script = os.path.join(self.pwd, 'span/binfile/idaPython/getinfo_fromIDA.py')
-        if jsonname:
-            self.jsonname = jsonname
-        else:
-            if isPatch:
-                self.jsonname = 'func_p.json'
+        self.json_dir = json_dir
+        self.json_name = json_name
+        self.isPatch = isPatch
+        self._default()
+
+
+    def _default(self):
+        if self.json_dir is None:
+            self.json_dir = os.path.join(BASE_DIR, 'data/output/')
+        if self.json_name is None:
+            if self.isPatch:
+                self.json_name = 'func_p.json'
             else:
-                self.jsonname = 'func_o.json'
-        if isPatch:
+                self.json_name = 'func_o.json'
+        if self.isPatch:
             self.tb_nodes = tb_nodes_p
             self.tb_asms = tb_asms_p
         else:
@@ -57,8 +69,7 @@ class FunInfoJson(object):
         调用IDAPython
         @param address: ida脚本参数 函数首地址字符串
         '''
-        self.out_json = os.path.join(self.result_d, self.jsonname)
-        bin_pwd = os.path.join(self.pwd, 'data/tmp/')
+        self.out_json = os.path.join(self.json_dir, self.json_name)
         cmd = "TVHEADLESS=1 idal -A -S'{} {} {}' {} > /dev/null".format(self.script, \
                     address_str, self.out_json, self.filename)
         (status, output) = commands.getstatusoutput(cmd) # output 做debug用
@@ -91,25 +102,25 @@ class FunInfoJson(object):
                     d[i] = str(d[i])
         if self._check_file():
             f = open(self.out_json)
-        nodes = []
-        asms = []
-        data = json.load(f)
-        f.close()
-        funcs = data['funcs']
-        for func in funcs:
-            name = func['funcname']
-            nodes_data = func['nodes']
-            for d in nodes_data:
-                _con2str(d)
-                d['funcname'] = name
-            nodes.extend(nodes_data)
-            asms_data = func['asms']
-            for d in asms_data:
-                _con2str(d)
-                d['oplen'] = len(d['opnds'])
-            asms.extend(asms_data)
-        db.add_data(self.tb_nodes, nodes)
-        db.add_data(self.tb_asms, asms)
+            nodes = []
+            asms = []
+            data = json.load(f)
+            f.close()
+            funcs = data['funcs']
+            for func in funcs:
+                name = func['funcname']
+                nodes_data = func['nodes']
+                for d in nodes_data:
+                    _con2str(d)
+                    d['funcname'] = name
+                nodes.extend(nodes_data)
+                asms_data = func['asms']
+                for d in asms_data:
+                    _con2str(d)
+                    d['oplen'] = len(d['opnds'])
+                asms.extend(asms_data)
+            db.add_data(self.tb_nodes, nodes)
+            db.add_data(self.tb_asms, asms)
 
     def write_func(self, address_str, db):
         '''

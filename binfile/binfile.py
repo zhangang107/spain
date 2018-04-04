@@ -5,12 +5,17 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T09:53:32+08:00
+# @Last modified time: 2018-04-04T17:10:51+08:00
 # @Copyright: Copyright by USTC
-
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
 from func_graph import FuncGraph
+
+import os
+import sys
+sys.path.append("..")
+
+from setting import BINDIFF, JSONFILE, FUNCINFOSQL
 
 class BinFile(object):
     '''
@@ -18,25 +23,48 @@ class BinFile(object):
     负责将二进制文件最总转换成数据库信息存储，并提供函数图类迭代调用
     '''
     def __init__(self, filenames, diff_threshold=1.0, diff_dir=None, sql_name=None,
-            json_path=None, funcinfo_path=None):
+            json_dir=None, json_names=None, funcinfo_dir=None, funcinfo_name=None):
         '''
-        @param filenames 二进制文件名，长度为2，filenames[0]为原文件，filenames[1]为补丁文件
+        @param filenames 二进制长文件名，长度为2，filenames[0]为原文件，filenames[1]为补丁文件
         @param diff_threshold BinDiff筛选阈值
         @param diff_dir bindiff结果数据库路径
         @param sql_name bindiff结果数据库名称
-        @param json_path json文件路径
-        @param funcinfo_path 最终函数信息数据库路径
+        @param json_dir 生成json文件目录
+        @param json_names 生成json短文件名列表
+        @param funcinfo_dir 最终函数信息数据库路径
         '''
         self.filenames = filenames
         self.diff_threshold = diff_threshold
         self.diff_dir = diff_dir
-        self.json_path = json_path
-        self.funcinfo_path = funcinfo_path
-        self.bindiff = BinDiffEx(filenames, diff_dir=diff_dir, sql_name=sql_name)
-        FunInfoSql.create_db()
-        self.funcinfosql = FunInfoSql(filenames)
+        self.sql_name = sql_name
+        self.json_dir = json_dir
+        self.json_names = json_names
+        self.funcinfo_dir = funcinfo_dir
+        self.funcinfo_name = funcinfo_name
         self.cmpedaddrs = None
         self.current_func = 0
+        self._deault_setting()
+        self.funcinfosql_name = os.path.join(self.funcinfo_dir, self.funcinfo_name)
+        self.bindiff = BinDiffEx(filenames, diff_dir=self.diff_dir, sql_name=self.sql_name)
+        self.funcinfosql = FunInfoSql(filenames, json_dir=self.json_dir, json_names=self.json_names)
+        FunInfoSql.create_db(self.funcinfosql_name)
+
+    def _deault_setting(self):
+        '''
+        检查添加默认配置
+        '''
+        if self.diff_dir is None:
+            self.diff_dir = BINDIFF['DIFF_DIR']
+        if self.sql_name is None:
+            self.sql_name = BINDIFF['SQL_NAME']
+        if self.json_dir is None:
+            self.json_dir = JSONFILE['JSON_DIR']
+        if self.json_names is None:
+            self.json_names = [JSONFILE['JSON_NAME_O'], JSONFILE['JSON_NAME_P']]
+        if self.funcinfo_dir is None:
+            self.funcinfo_dir = FUNCINFOSQL['FUNC_INFO_DIR']
+        if self.funcinfo_name is None:
+            self.funcinfo_name = FUNCINFOSQL['FUNC_INFO_NAME']
 
     def diff(self):
         '''
@@ -57,6 +85,8 @@ class BinFile(object):
         '''
         根据bindiff筛选结果生成函数信息数据库
         '''
+        if self.cmpedaddrs is None:
+            self.diff_filter()
         address_o = ','.join(map(lambda x : str(x[0]), self.cmpedaddrs))
         address_p = ','.join(map(lambda x : str(x[1]), self.cmpedaddrs))
         self.funcinfosql.add_data(address_o, isPatch=False)

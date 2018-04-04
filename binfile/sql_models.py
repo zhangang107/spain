@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: sql_models.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T11:26:56+08:00
+# @Last modified time: 2018-04-04T17:02:17+08:00
 # @Copyright: Copyright by USTC
 
 from sqlalchemy import Column, String, Integer, create_engine, text
@@ -36,8 +36,12 @@ tb_asms_p = 'funcasmp'
 
 Base = declarative_base()
 class DataDb(object):
-    def __init__(self, dbstring='sqlite:///test_json.db'):
+    def __init__(self, dbstring=None):
         self.dbstring = dbstring
+        if self.dbstring is None:
+            self.dbstring = 'sqlite:///test_json.db'
+        else:
+            self.dbstring = 'sqlite:///{}'.format(self.dbstring)
         self.engine = create_engine(self.dbstring)
         self.DBSession = sessionmaker(bind=self.engine)
         # self.session = self.DBSession()

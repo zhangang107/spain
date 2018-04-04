@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T10:20:12+08:00
+# @Last modified time: 2018-04-04T20:15:12+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -43,36 +43,29 @@ class FunInfoSql(object):
     函数信息数据库操作类，主要由FunInfoJson和数据库模型类组成
     封装上述两个类的主要功能
     '''
-    def __init__(self, filenames, json_names=None):
+    def __init__(self, filenames, json_dir=None, json_names=None):
         '''
         @param filenames 二进制文件名列表,filenames[0]存储原二进制文件名，filenames[1]存储补丁二进制文件名
-        @param json_names json文件名列表，json_names[0]存储原json文件名，json_names[1]存储补丁json文件名
+        @param json_dir 生成的json文件目录
+        @param json_names json短文件名列表，json_names[0]存储原json文件名，json_names[1]存储补丁json文件名
         '''
         self.filenames = filenames
-        if json_names:
-            self.json_names = json_names
-            self.funcinfo_json_o = FunInfoJson(filenames[0], jsonname=json_names[0])
-            self.funcinfo_json_p = FunInfoJson(filenames[1], isPatch=True, jsonname=json_names[1])
-        self.funcinfo_json_o = FunInfoJson(filenames[0])
-        self.funcinfo_json_p = FunInfoJson(filenames[1], isPatch=True)
+        self.funcinfo_json_o = FunInfoJson(filenames[0], json_name=json_names[0], json_dir=json_dir)
+        self.funcinfo_json_p = FunInfoJson(filenames[1], isPatch=True, json_name=json_names[1], json_dir=json_dir)
 
     @classmethod
     def create_db(cls, sql_name=None):
         '''
         建立库表
         '''
-        if sql_name:
-            cls.sql_name = sql_name
-            cls.db = DataDb(cls.sql_name)
-        else:
-            cls.db = DataDb()
+        cls.db = DataDb(sql_name)
         cls.db.create_tb()
 
     def check_db(f):
         '''
         修饰器：检查数据库是否存在
         '''
-        @wraps
+        @wraps(f)
         def decorated(*args, **kwargs):
             self = args[0]
             if not self.db:
