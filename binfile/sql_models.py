@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: sql_models.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T14:09:06+08:00
+# @Last modified time: 2018-04-08T16:16:17+08:00
 # @Copyright: Copyright by USTC
 
 from sqlalchemy import Column, String, Integer, create_engine, text
@@ -108,6 +108,7 @@ class DataDb(object):
         查询基本快汇编汇编信息
         @parma 节点
         @parma 是否是查询补丁表
+        @return 返回汇编表结构, 字典列表
         '''
         if isPatch:
             tbname = FuncAsmP
@@ -115,6 +116,7 @@ class DataDb(object):
             tbname = FuncAsmO
         asms = self._query_range(tbname, tbname.address,
                 node.block_start, node.block_end).all()
+        # unicode转str
         return asms
 
     def _get_tb_byname(self, tbname):

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: setting.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T16:26:10+08:00
+# @Last modified time: 2018-04-08T16:52:06+08:00
 # @Copyright: Copyright by USTC
 
 import os
@@ -34,3 +34,6 @@ FUNCINFOSQL = {
     'FUNC_INFO_DIR': os.path.join(BASE_DIR, OUT_DIR),
     'FUNC_INFO_NAME': 'func_info.db',
 }
+
+# arch
+ARCH = 'arm'

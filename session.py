@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T16:01:42+08:00
+# @Last modified time: 2018-04-08T16:48:55+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
@@ -89,9 +89,13 @@ class Session(object):
         self.cur_blocks['address_p'] = self.cfg['patch'].address
         traces = Trace(self.cfg['origin'].func_graph, self.cfg['patch'].func_graph)
         self.cur_blocks['traces'] = traces.get_trace()
+        self.cur_blocks['traces_nodes'] = traces.traces2nodes()
+        return len(self.cur_blocks['traces_nodes'])
 
     def seman_analysis(self):
         '''
         语义分析
         '''
-        pass
+        nodes_o_list, nodes_p_list = self.cur_blocks['traces_nodes']
+        sem_data = bf.get_seman_data(nodes_o_list, nodes_p_list)
+        sim = Semantic(*sem_data[0], load_args=self.filenames)

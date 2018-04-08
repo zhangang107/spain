@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T17:10:51+08:00
+# @Last modified time: 2018-04-08T15:47:40+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
@@ -21,6 +21,7 @@ class BinFile(object):
     '''
     二进制处理类，统一整个预处理工作
     负责将二进制文件最总转换成数据库信息存储，并提供函数图类迭代调用
+    添加一个函数根据traces获取语义分析前置数据即汇编代码集、基本块首末地址列表
     '''
     def __init__(self, filenames, diff_threshold=1.0, diff_dir=None, sql_name=None,
             json_dir=None, json_names=None, funcinfo_dir=None, funcinfo_name=None):
@@ -42,7 +43,8 @@ class BinFile(object):
         self.funcinfo_dir = funcinfo_dir
         self.funcinfo_name = funcinfo_name
         self.cmpedaddrs = None
-        self.current_func = 0
+        self.current_func_index = 0
+        self.cur_funcs = None
         self._deault_setting()
         self.funcinfosql_name = os.path.join(self.funcinfo_dir, self.funcinfo_name)
         self.bindiff = BinDiffEx(filenames, diff_dir=self.diff_dir, sql_name=self.sql_name)
@@ -92,6 +94,38 @@ class BinFile(object):
         self.funcinfosql.add_data(address_o, isPatch=False)
         self.funcinfosql.add_data(address_p, isPatch=True)
 
+    def get_seman_data(self, nodes_o_list, nodes_p_list, func_o=None, func_=None):
+        '''
+        根据traces获取语义分析前置数据即汇编代码集、基本块首末地址列表
+        @param nodes_o_list 原基本块序列列表
+        @type nodes_o_list 列表的列表
+        @param nodes_p_list 补丁基本块序列列表
+        @type nodes_p_list 列表的列表
+        @param func_o 原函数图
+        @param func_p 补丁函数图
+        '''
+        if func_o is None or func_p is None:
+            func_o, func_p = self.cur_funcs
+        seman_data = []
+        for nodes_o, nodes_p in zip(nodes_o_list, nodes_p_list):
+            asms_o, addrs_o = self._get_single_smdata(func_o, nodes_o)
+            asms_p, addrs_p = self._get_single_smdata(func_p, nodes_p)
+            seman_data.append((asms_o, asms_p, addrs_o, addrs_p))
+        return seman_data
+
+    def _get_single_smdata(self, func, nodes):
+        '''
+        获取单个函数语义分析前置数据
+        '''
+        asms = []
+        addres = []
+        for n in nodes:
+            asms.extend(func.nodes[n]['asms'])
+            addr_start = func.nodes[n]['startEA']
+            addr_end = func.nodes[n]['endEA']
+            addres.append((addr_start, addr_end))
+        return asms, addres
+
     def _get_single_graph(self, arg, isPatch):
         '''
         获取一个函数图
@@ -110,6 +144,7 @@ class BinFile(object):
         '''
         _funcgraph_o = self._get_single_graph(arg_o, isPatch=False)
         _funcgraph_p = self._get_single_graph(arg_p, isPatch=True)
+        self.cur_funcs = (_funcgraph_o, _funcgraph_p)
         return _funcgraph_o, _funcgraph_p
 
     def next_func_graphs(self):
@@ -119,7 +154,7 @@ class BinFile(object):
         for address_o, address_p in self.cmpedaddrs:
             _funcgraph_o, _funcgraph_p = self.get_single_graphs(address_o, address_p)
             yield _funcgraph_o, _funcgraph_p
-            self.current_func += 1
+            self.current_func_index += 1
 
     def _get_func_by_name(self, name):
         '''

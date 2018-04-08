@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T14:26:57+08:00
+# @Last modified time: 2018-04-08T16:27:19+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -110,11 +110,11 @@ class FunInfoSql(object):
             _asms = self.query_node_asms(_n, isPatch)
             asms, sizes, mnem_list, opnds_list, optype_list = [], [], [], [], []
             for a in _asms:
-                asms.append(a.asm)
+                asms.append(a.asm.encode('utf-8'))
                 sizes.append(a.size)
-                mnem_list.append(a.mnem)
-                opnds_list.append(a.opnds)
-                optype_list.append(a.optypes)
+                mnem_list.append(a.mnem.encode('utf-8'))
+                opnds_list.append(a.opnds.encode('utf-8'))
+                optype_list.append(a.optypes.encode('utf-8'))
             nodes[src]['asms'] = asms
             nodes[src]['sizes'] = sizes
             nodes[src]['power'] = len(asms)

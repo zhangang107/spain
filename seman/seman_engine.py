@@ -5,12 +5,16 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T09:41:51+08:00
+# @Last modified time: 2018-04-08T16:53:10+08:00
 # @Copyright: Copyright by USTC
 
 import angr
 import claripy
 import re
+import copy
+import sys
+sys.path.append("..")
+from setting import ARCH
 
 '''
 语义分析：
@@ -46,8 +50,7 @@ class AngrEngine(object):
     proj = None
     proj_file_path = None
     def __init__(self, file_path=None):
-        self.__init_proj()
-        self.post_state = post_state
+        self.__init_proj(file_path)
 
     @classmethod
     def __init_proj(cls, file_path):
@@ -69,16 +72,16 @@ class AngrEngine(object):
             state.ip = claripy.BVV(ip, 32)
             # print 'ip:', state.ip
             # print 'size:', addr_end-addr_start
-            s = proj.factory.blank_state()
+            s = self.proj.factory.blank_state()
             s.ip = claripy.BVV(ip, 32)
-            # state = (proj.factory.successors(state, size=addr_end-addr_start)).all_successors[0]
+            # state = (self.proj.factory.successors(state, size=addr_end-addr_start)).all_successors[0]
             st = (state.step(size=addr_end-addr_start)).all_successors[0]
             self.__copy_regs2state(st, state)
             # state.regs.set_state(st)
             print '------->', state
             # print 'regs:\n'
             # print_reg(state, regs)
-            ip += (proj.factory.block(ip)).size
+            ip += (self.proj.factory.block(ip)).size
         # comlog.debug(type(state))
         # print '\n'
         # print state
@@ -90,17 +93,19 @@ class AngrEngine(object):
         s = self.proj.factory.blank_state()
         s.ip = addr
         for reg in self.regs:
-            s.regs.__setattr__(reg.lower(), regs[reg])
+            s.regs.__setattr__(reg.lower(), self.regs[reg])
         return s
 
     def __eval_update_regs(self, SimState):
     	self.print_reg(SimState)
     	for reg in self.regs:
     		self.regs[reg] = SimState.solver.eval(SimState.regs.get(reg.lower()))
+        return self.regs
 
     def __eval_update_flag(self, SimState):
         for k, v in zip(self.flag, SimState.regs.flags.chop()[0:4]):
             self.flag[k] = SimState.solver.eval(v)
+        return self.flag
 
     def print_reg(self, s):
         '''
@@ -121,45 +126,64 @@ class AngrEngine(object):
             s2.registers.store(reg, value)
         s2.regs.flags = s1.regs.flags
 
-    def update_state_from_addrs(self, addrs=None, post_state=None):
+    def update_state_from_addrs(self, addrs, pre_state):
         '''
         从状态模拟器中更新post_state
+        @param addrs 地址列表,其中元素addres为二元组, addres[0]基本块起始地址,addres[1]基本块结束地址
+        @param pre_state 前状态
         '''
-        if addrs:
-            self.addrs = addrs
-        if post_state:
-            self.post_state = post_state
-        regs = self.post_state[0].copy()
+        self.addrs = addrs
+        post_state = copy.deepcopy(pre_state)
+        self.regs = post_state['reg'].copy()
+        self.flag = post_state['flag'].copy()
         if len(addrs) < 1:
             return
-        s = self.__init_state(self.addrs[0][0])
-        state = s
+        state = self.__init_state(self.addrs[0][0])
         for addr in self.addrs:
             print(hex(addr[0]), hex(addr[1]))
-            ip, state = sim_block(addr[0], addr[1], state)
+            ip, state = self.__sim_block(addr[0], addr[1], state)
             state.ip = claripy.BVV(ip, 32)
         # print "last state:\n", state
         # update_regs(state, post_state[0])
-        self.__eval_update_regs(state)
-        self.__eval_update_flag(state)
+        post_state['reg'] = self.__eval_update_regs(state)
+        post_state['flag'] = self.__eval_update_flag(state)
+        return post_state
+
 
 class SemanticEngine(object):
     '''
-    语义分析引擎之自定义分析
-    组合AngrEngine完成语义分析
-    主要完成angr分析的前期预处理以及完善内存位置分析
+    语义分析引擎类
+    统筹三元组识别器和代码模拟器
+    提供get_pre_state函数和get_post_state
+    完成必要资源的装载
     '''
-    def __init__(self, asms, arch='arm'):
+    def __init__(self, asms, addrs, arch=None):
         '''
         asms: 汇编码集
         arch: 架构（暂时指arm或mips）
         '''
         self._arch = arch
         self.asms = asms
-        self.__reg = None
-        self.__flag = None
-        self.__mem = None
+        self.addrs = addrs
         self.__pre_state = None
+        self.__init_state()
+        self._sim = AngrEngine
+        self._sim_ins = None
+
+        if self._arch is None:
+            self._arch = ARCH
+
+    def get_pre_state(self):
+        return self.__pre_state
+
+    def get_post_state(self):
+        return self._sim_ins.update_state_from_addrs(addrs=self.addrs, pre_state=self.__pre_state)
+
+    def _load(self, load_args):
+        '''
+        完成必要资源的装载
+        '''
+        self._sim_ins = self._sim(file_path=load_args)
 
     @property
     def pre_state(self):
@@ -230,7 +254,7 @@ class SemanticEngine(object):
 
     def __init_state(self):
         '''
-        初始化状态，可获取pre_state
+        初始化状态，可获取pre_state,与具体架构有关
         '''
         reg = {}
         flag = {'N':0, 'Z':0, 'C':0, 'V':0}
@@ -242,40 +266,4 @@ class SemanticEngine(object):
                 for word in [a for a in re.split(' |,|\[|\]', asm) if a]:
                     if self.__check_reg(word) and word not in reg:
                         reg[word] = 0
-        self.__pre_state = (reg, flag, mem)
-
-
-
-if __name__ == '__main__':
-    asms = ('ADD     R8, R6, #0x13',
-            'LDR     R2, =0x5C9',
-            'LDR     R1, =0x17694C',
-            'MOV     R0, R8',
-            'BL      CRYPTO_malloc',
-            'MOV     R7, R0',
-            'MOV     R3, #2',
-            'STRB    R3, [R0]',
-            'MOV     R3, R6,LSR#8',
-            'STRB    R3, [R0,#1]',
-            'STRB    R6, [R0,#2]',
-            'ADD     R9, R0, #3',
-            'MOV     R2, R6',
-            'ADD     R1, R5, #3',
-            'MOV     R0, R9',
-            'BL      sub_115D8',
-            'MOV     R1, #0x10',
-            'ADD     R0, R9, R6',
-            'BL      RAND_pseudo_bytes',
-            'MOV     R3, R8',
-            'MOV     R2, R7',
-            'MOV     R1, #0x18',
-            'MOV     R0, R4',
-            'BL      dtls1_write_bytes',
-            'SUBS    R5, R0, #0',
-            'BLT     loc_79E28', )
-    print 'start...'
-    # proj = angr.Project('./openssl-arm-f')
-    proj = None
-    regs = init_regs(asms)
-    print regs
-    print 'end...'
+        self.__pre_state = {'reg':reg, 'flag':flag, 'mem':mem}

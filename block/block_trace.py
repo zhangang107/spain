@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: block_trace.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T21:21:36+08:00
+# @Last modified time: 2018-04-08T15:24:45+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 from collections import deque
@@ -49,7 +49,7 @@ class Trace(object):
             self.blocks_o = self.__GetRelevantOriginalBlocks()
             comlog.debug('blocks_o {}'.format(self.blocks_o))
             traces_o = self.__LinerConnectedComponents(self.blocks_o, f_type='O')
-            self.traces.append((trace_p, traces_o))
+            self.traces.append({'trace_p':trace_p, 'traces_o':traces_o})
         return self.traces
 
     def traces2nodes(self):
@@ -59,8 +59,8 @@ class Trace(object):
         nodes_o_list = []
         nodes_p_list = []
         for partial_trace in self.traces:
-            nodes_o_list.append([node for trace in partial_trace[1] for node in trace])
-            nodes_p_list.append(partial_trace[0])
+            nodes_o_list.append([node for trace in partial_trace['traces_o'] for node in trace])
+            nodes_p_list.append(partial_trace['trace_p'])
         return nodes_o_list, nodes_p_list
 
     def __match(self):
