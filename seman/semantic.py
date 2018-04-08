@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T09:42:21+08:00
+# @Last modified time: 2018-04-07T21:37:11+08:00
 # @Copyright: Copyright by USTC
 
 import re
@@ -19,6 +19,8 @@ class Semantic(object):
     对每条对应轨迹进行语义分析，求出语义差值
     输入： 轨迹对应汇编码对集，地址对集
     外部资源输入：二进制文件路径（用于启动angr）
+
+    #TODO
     '''
     def __init__(self, asms_o, asms_p, addrs_o, addrs_p):
         self.asms_o = asms_o

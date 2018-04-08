@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T20:15:12+08:00
+# @Last modified time: 2018-04-07T14:26:57+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -95,7 +95,7 @@ class FunInfoSql(object):
         else:
             self.funcinfo_json_o.write_func(address_str, self.db)
 
-    def _get_func_info(self, _nodes, funcname):
+    def _get_func_info(self, _nodes, funcname, isPatch=False):
         '''
         依据数据库结果_nodes，构造函数图类所需节点nodes,边edges,以及函数名
         '''
@@ -105,7 +105,7 @@ class FunInfoSql(object):
             src = _n.block_id
             for dst in eval(_n.child):
                 edges.append([src, int(dst)])
-            node[src] = {'funcname':funcname, 'startEA': _n.block_start,
+            nodes[src] = {'funcname':funcname, 'startEA': _n.block_start,
                             'endEA':_n.block_end}
             _asms = self.query_node_asms(_n, isPatch)
             asms, sizes, mnem_list, opnds_list, optype_list = [], [], [], [], []
@@ -123,7 +123,7 @@ class FunInfoSql(object):
             nodes[src]['optype'] = _cumulate_item(optype for optlist in optype_list for
                                             optype in eval(optlist))
             nodes[src]['call'] = _handle_call(mnem_list, opnds_list)
-        address = node[0]['startEA']
+        address = nodes[0]['startEA']
         return funcname, address, nodes, edges
 
     @check_db
@@ -136,11 +136,11 @@ class FunInfoSql(object):
         if isinstance(arg, int):
             address = arg
             _nodes, funcname = self.query_func_nodes(address, isPatch)
-            return self._get_func_info(_nodes, funcname)
+            return self._get_func_info(_nodes, funcname, isPatch=isPatch)
         elif isinstance(arg, str):
             funcname = arg
             _nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNode=True)
-            return self._get_func_info(_nodes, funcname)
+            return self._get_func_info(_nodes, funcname, isPatch=isPatch)
 
     @check_db
     def query_func_nodes(self, address, isPatch=False):
@@ -149,7 +149,7 @@ class FunInfoSql(object):
         '''
         _node = self.query_node(address, isPatch)
         funcname = _node.funcname
-        nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNode=True)
+        nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNodes=True)
         return nodes, funcname
 
     @check_db

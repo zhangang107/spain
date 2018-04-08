@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: sql_models.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T17:02:17+08:00
+# @Last modified time: 2018-04-07T14:09:06+08:00
 # @Copyright: Copyright by USTC
 
 from sqlalchemy import Column, String, Integer, create_engine, text
@@ -81,7 +81,7 @@ class DataDb(object):
         查询
         '''
         session = self.DBSession()
-        rs = session.query(tbname).filter(ql)
+        rs = session.query(tbname).filter(sql)
         session.close()
         return rs
 

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: block_trace.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T09:45:18+08:00
+# @Last modified time: 2018-04-07T21:21:36+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 from collections import deque
@@ -36,9 +36,9 @@ class Trace(object):
         轨迹算法主体
         '''
         self.__match()
-        comlog.debug('blocks_p: {}'.format(blocks_p))
-        comlog.debug('\n\ntags: {}'.format(tags))
-        traces_p = self.__LinerConnectedComponents(blocks_p, 'P')
+        comlog.debug('blocks_p: {}'.format(self.blocks_p))
+        comlog.debug('\n\ntags: {}'.format(self.tags))
+        traces_p = self.__LinerConnectedComponents(self.blocks_p, 'P')
         for trace_p in traces_p:
             self.neighbors_p = self.__GetFirstDegreeNeigbors(trace_p)
             comlog.debug('[+]neighbors in patch')
@@ -78,7 +78,7 @@ class Trace(object):
                     break
             if not FoundMatch:
                 self.blocks_p.append(node)
-    def __node_same(self, ndoe_p, node_o, cmp=None):
+    def __node_same(self, node_p, node_o, cmp=None):
         '''
         cmp: 比较函数 定义节点相等（相似）
              为空，则已节点助记符列表完全相同来判断
@@ -134,10 +134,10 @@ class Trace(object):
         获取原函数对应基本块
         '''
         # 当且仅当与边界点相通
+        neighbors = self.neighbors_o
         if len(neighbors) <= 0:
             return []
         graph = self.graph_o
-        neighbors = self.neighbors_o
         node_visited = set()
         blocks_o = []
         nodes = self.__GetFirstDegreeNeigbors(neighbors, 'O')
@@ -164,6 +164,7 @@ class Trace(object):
         blocks = []
         graph = self.graph_o
         neighbors = self.neighbors_o
+        tags = self.tags
         while len(queue) > 0:
             node = queue.pop()
             node_visited.add(node)

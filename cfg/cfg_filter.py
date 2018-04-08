@@ -5,10 +5,12 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: cfg_filter.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T15:57:06+08:00
+# @Last modified time: 2018-04-07T20:57:23+08:00
 # @Copyright: Copyright by USTC
 
 from post_dom import Dom
+import networkx as nx
+from operator import itemgetter
 
 class CFG(object):
     '''
@@ -41,7 +43,7 @@ class CFG(object):
         '''
         获取后支配点
         '''
-        graph_dom = Dom(self._graph)
+        graph_dom = Dom(self._graph, start=0)
         graph_dom.run()
         post_dom = graph_dom.get_post_dominators()
         dom_list = graph_dom.get_rdf()
