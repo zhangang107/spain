@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T16:42:32+08:00
+# @Last modified time: 2018-04-09T17:07:24+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -20,7 +20,7 @@ file_p = os.path.join(BASE_DIR, 'data/binfile/openssl-arm-g')
 filenames = [file_o, file_p]
 
 bf = BinFile(filenames)
-bf.diff()
+# bf.diff()
 print bf.diff_filter()
 
 # import ipdb; ipdb.set_trace()

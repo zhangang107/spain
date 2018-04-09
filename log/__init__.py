@@ -5,5 +5,6 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: __init__.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-03T09:32:30+08:00
+# @Last modified time: 2018-04-09T09:36:26+08:00
 # @Copyright: Copyright by USTC
+from mylog import comlog

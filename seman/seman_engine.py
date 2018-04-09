@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:17:54+08:00
+# @Last modified time: 2018-04-09T17:35:22+08:00
 # @Copyright: Copyright by USTC
 
 import angr
@@ -167,12 +167,11 @@ class SemanticEngine(object):
         self.asms = asms
         self.addrs = addrs
         self.__pre_state = None
+        if self._arch is None:
+            self._arch = ARCH
         self.__init_state()
         self._sim = AngrEngine
         self._sim_ins = None
-
-        if self._arch is None:
-            self._arch = ARCH
 
     def get_pre_state(self):
         return self.__pre_state

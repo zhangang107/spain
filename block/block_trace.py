@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: block_trace.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T15:24:45+08:00
+# @Last modified time: 2018-04-09T09:35:16+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 from collections import deque
@@ -40,6 +40,7 @@ class Trace(object):
         comlog.debug('\n\ntags: {}'.format(self.tags))
         traces_p = self.__LinerConnectedComponents(self.blocks_p, 'P')
         for trace_p in traces_p:
+            comlog.debug('trace_p: {}'.format(trace_p))
             self.neighbors_p = self.__GetFirstDegreeNeigbors(trace_p)
             comlog.debug('[+]neighbors in patch')
             comlog.debug('\t{}'.format(self.neighbors_p))

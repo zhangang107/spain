@@ -5,13 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:25:35+08:00
+# @Last modified time: 2018-04-09T16:59:18+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
 from cfg import CFG
 from block import Trace
 from seman import Semantic
+from log.mylog import comlog
 
 class Session(object):
     '''
@@ -32,21 +33,28 @@ class Session(object):
         处理当前函数图进行补丁基本块定位
         处理当前基本块序列进行语义分析
     '''
-    def __init__(self, filenames, diff_name=None, funcinfo_path=None):
+    def __init__(self, filenames, diff_dir=None, sql_name=None, json_dir=None,
+                    json_names=None, funcinfo_dir=None, funcinfo_name=None):
         '''
         在初始化中完成IDC以及BinDiff调用,生成BinDiff数据库
         '''
         self.filenames = filenames
-        self.diff_name = diff_name
-        self.funcinfo_path = funcinfo_path
-        self.binfile = BinFile(self.filenames, diff_path=diff_name)
-        self._idc_bindiff()
+        self.diff_dir = diff_dir
+        self.sql_name = sql_name
+        self.json_dir = json_dir
+        self.json_names = json_names
+        self.funcinfo_dir = funcinfo_dir
+        self.funcinfo_name = funcinfo_name
+        self.binfile = BinFile(self.filenames, diff_dir=self.diff_dir, sql_name=self.sql_name,
+                        json_dir=self.json_dir, json_names=self.json_names,
+                        funcinfo_dir=self.funcinfo_dir, funcinfo_name=self.funcinfo_name)
         self.cfg = {'origin':None, 'patch':None}
         self.cur_func = {'origin':None, 'patch':None}
         self.cur_blocks = {}
         self.func_cfg_centroid = {}
         self.func_generator = self.binfile.next_func_graphs()
-        self.candidate_func = []
+        self.candidate_func = {}
+        self.cfg_iter_count = 0
 
     def _idc_bindiff(self):
         '''
@@ -58,11 +66,11 @@ class Session(object):
         '''
         BinDiff筛选，获取初始候选函数
         '''
-        self.binfile.diff_filter(threshold)
+        return self.binfile.diff_filter(threshold)
 
     def cfg_filter(self, arg=None):
         '''
-        cfg筛选，获取候选函数
+        cfg筛选，获取候选函数存入self.candidate_func中
         '''
         if arg is None:
             # 默认获取下一对候选函数
@@ -76,10 +84,11 @@ class Session(object):
         self.func_cfg_centroid[funcname] = {
                 'origin': self.cfg['origin'].get_centroid(),
                 'patch': self.cfg['patch'].get_centroid()}
-        if self.cfg['origin'].same_with(self.cfg['patch']):
+        if not self.cfg['origin'].same_with(self.cfg['patch']):
             self.candidate_func[funcname] = {
                 'origin': self.cfg['origin'].address,
                 'patch': self.cfg['patch'].address}
+        # comlog.info('candidate_func {}'.format(self.candidate_func))
 
     def blocks_locate(self, arg=None):
         '''
@@ -91,6 +100,8 @@ class Session(object):
         traces = Trace(self.cfg['origin'].func_graph, self.cfg['patch'].func_graph)
         self.cur_blocks['traces'] = traces.get_trace()
         self.cur_blocks['traces_nodes'] = traces.traces2nodes()
+        comlog.info('funcname: {}'.format(self.cur_blocks['funcname']))
+        # comlog.info('cur_blocks {}'.format(self.cur_blocks))
         return len(self.cur_blocks['traces_nodes'])
 
     def seman_analysis(self):
@@ -98,5 +109,26 @@ class Session(object):
         语义分析
         '''
         nodes_o_list, nodes_p_list = self.cur_blocks['traces_nodes']
-        sem_data = bf.get_seman_data(nodes_o_list, nodes_p_list)
-        sim = Semantic(*sem_data[0], load_args=self.filenames)
+        sem_data = self.binfile.get_seman_data(nodes_o_list, nodes_p_list)
+        for _sem in sem_data:
+            # comlog.info('nodes {}'.format(_sem))
+            if not _sem[0] or not _sem[1]:
+                # 为空跳过
+                continue
+            sim = Semantic(*_sem, load_args=self.filenames)
+            cur_pre = sim.get_pre_state()
+            cur_post = sim.get_post_state()
+            # comlog.debug(cur_pre)
+            # comlog.debug(cur_post)
+            cur_diff = sim.get_semidiff()
+            comlog.info('[*]\033[40;43m {} \033[0m'.format(cur_diff))
+
+    def analysis(self):
+        '''
+        快速分析
+        '''
+        nums = self.bin_filter()
+        for i in range(nums):
+            self.cfg_filter()
+            self.blocks_locate()
+            self.seman_analysis()

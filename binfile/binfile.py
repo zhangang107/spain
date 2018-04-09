@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:19:20+08:00
+# @Last modified time: 2018-04-09T11:01:06+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
@@ -16,7 +16,7 @@ import sys
 sys.path.append("..")
 
 from setting import BINDIFF, JSONFILE, FUNCINFOSQL
-from log.mylog import comlog
+from log import comlog
 
 class BinFile(object):
     '''
@@ -94,6 +94,7 @@ class BinFile(object):
         address_p = ','.join(map(lambda x : str(x[1]), self.cmpedaddrs))
         self.funcinfosql.add_data(address_o, isPatch=False)
         self.funcinfosql.add_data(address_p, isPatch=True)
+        comlog.info('create func.db done.')
 
     def get_seman_data(self, nodes_o_list, nodes_p_list, func_o=None, func_=None):
         '''
@@ -127,14 +128,14 @@ class BinFile(object):
             addres.append((addr_start, addr_end))
         return asms, addres
 
-    def _get_single_graph(self, arg, isPatch):
+    def _get_single_graph(self, arg, isPatch=False):
         '''
         获取一个函数图
         @param arg 函数地址或者函数名称
         @param isPatch 是否是补丁
         '''
         funcname, address, nodes, edges = self.funcinfosql.query_func_info(arg, isPatch)
-        _funcgraph = FuncGraph(funcname, address, nodes, edges)
+        _funcgraph = FuncGraph(funcname, address, nodes, edges, isPatch=isPatch)
         return _funcgraph
 
     def get_single_graphs(self, arg_o, arg_p):

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_json.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T20:47:35+08:00
+# @Last modified time: 2018-04-09T14:22:20+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import tb_nodes_o, tb_nodes_p, tb_asms_o, tb_asms_p
@@ -16,6 +16,7 @@ import json
 
 sys.path.append('../')
 from setting import BASE_DIR
+from log import comlog
 
 class FunInfoJson(object):
     '''
@@ -74,7 +75,7 @@ class FunInfoJson(object):
                     address_str, self.out_json, self.filename)
         (status, output) = commands.getstatusoutput(cmd) # output 做debug用
         if status != 0: # 正常返回0
-            print(output)
+            comlog.error(output)
         return status
 
     def _check_file(self):
@@ -87,8 +88,8 @@ class FunInfoJson(object):
             f.close()
         except Exception as err:
             exist = False
-            print("[error] {} not exist, something wrong".format(self.out_json))
-            print err
+            comlog.error("[error] {} not exist, something wrong".format(self.out_json))
+            comlog.error(err)
         return exist
 
     def json2sql(self, db):
@@ -119,6 +120,8 @@ class FunInfoJson(object):
                     _con2str(d)
                     d['oplen'] = len(d['opnds'])
                 asms.extend(asms_data)
+                # if name.encode('utf-8') == 'req_main' and self.isPatch:
+                    # import ipdb; ipdb.set_trace()
             db.add_data(self.tb_nodes, nodes)
             db.add_data(self.tb_asms, asms)
 

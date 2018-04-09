@@ -5,13 +5,12 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:20:45+08:00
+# @Last modified time: 2018-04-09T15:05:41+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
-from funcinfo_json import FunInfoJson
+from funcinfo_json import FunInfoJson, comlog
 from functools import wraps
-from binfile import comlog
 
 def _cumulate_item(item_list):
     '''
@@ -109,6 +108,9 @@ class FunInfoSql(object):
             nodes[src] = {'funcname':funcname, 'startEA': _n.block_start,
                             'endEA':_n.block_end}
             _asms = self.query_node_asms(_n, isPatch)
+            # if funcname.encode('utf-8') == 'req_main' and isPatch and _n.block_id==412:
+            #         # print _n.block_id
+            #         import ipdb; ipdb.set_trace()
             asms, sizes, mnem_list, opnds_list, optype_list = [], [], [], [], []
             for a in _asms:
                 asms.append(a.asm.encode('utf-8'))
@@ -165,7 +167,7 @@ class FunInfoSql(object):
         '''
         查询获取节点汇编信息
         '''
-        return self.db.query_asms(node, isPatch=False)
+        return self.db.query_asms(node, isPatch=isPatch)
 
     def set_jsonname(self, json_name_o=None, json_name_p=None):
         '''

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-04T16:30:17+08:00
+# @Last modified time: 2018-04-09T09:42:23+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -15,8 +15,7 @@ import sys
 
 sys.path.append('../')
 from setting import BASE_DIR
-
-
+from log import comlog
 differ_dir = os.path.join(BASE_DIR,'spain')
 
 class BinException(Exception):
@@ -73,8 +72,8 @@ class BinDiffEx(object):
                     f.close()
                 except Exception as err:
                     exist = False
-                    print('{} not exist, something wrong'.format(filename))
-                    print(err)
+                    comlog.error('{} not exist, something wrong'.format(filename))
+                    comlog.error(err)
         else:
             exist = False
         return exist
@@ -88,6 +87,7 @@ class BinDiffEx(object):
                 cmd = 'TVHEADLESS=1 idal -A -Sbindiff_export.idc {}'.format(filename)
                 (status, output) = commands.getstatusoutput(cmd)
                 if status != 0:
+                    comlog.error(output)
                     raise BinException('call idc wrong!')
         return True
 
@@ -111,16 +111,16 @@ class BinDiffEx(object):
         if self._check_files(export_files):
             cmd = '{0}/differ --primary={1} --secondary={2} --output_dir={3}'.format(
                         differ_dir, export_files[0], export_files[1], self.diff_dir)
-            print(cmd)
+            comlog.info(cmd)
             (status, output) = commands.getstatusoutput(cmd)
             if status != 0:
-                print output
+                comlog.error(output)
                 raise BinException('differ wrong!')
             rename_cmd = 'mv {0}/*.BinDiff {0}/{1}'.format(self.diff_dir, self.sql_name)
-            print(rename_cmd)
+            comlog.info(rename_cmd)
             (status, output) = commands.getstatusoutput(rename_cmd)
             if status != 0:
-                print output
+                comlog.error(output)
                 raise BinException('rename sql wrong!')
         return True
 

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_cfg.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T21:00:35+08:00
+# @Last modified time: 2018-04-09T15:27:36+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -20,14 +20,17 @@ file_p = os.path.join(BASE_DIR, 'data/binfile/openssl-arm-g')
 filenames = [file_o, file_p]
 
 bf = BinFile(filenames)
-bf.diff()
+# bf.diff()
 print bf.diff_filter()
+# bf.init_funcinfo()
 
+candidate_func = []
 # import ipdb; ipdb.set_trace()
-graph_o, graph_p = bf.next_func_graphs().next()
+for graph_o, graph_p in bf.next_func_graphs():
+    cfg_o = CFG(func_graph=graph_o)
+    cfg_p = CFG(func_graph=graph_p)
+    if not cfg_o.same_with(cfg_p):
+        candidate_func.append(cfg_o.funcname)
 
-cfg_o = CFG(func_graph=graph_o)
-cfg_p = CFG(func_graph=graph_p)
-cfg_o.calculate()
-# print cfg_o.nodesXYZ
-print cfg_o.get_centroid()
+print len(candidate_func)
+print candidate_func

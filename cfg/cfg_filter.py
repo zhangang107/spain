@@ -5,12 +5,13 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: cfg_filter.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T20:57:23+08:00
+# @Last modified time: 2018-04-09T16:49:22+08:00
 # @Copyright: Copyright by USTC
 
 from post_dom import Dom
 import networkx as nx
 from operator import itemgetter
+from log.mylog import comlog
 
 class CFG(object):
     '''
@@ -221,11 +222,13 @@ class CFG(object):
         CDD = max([_cal(cx_o, cx_p), _cal(cy_o, cy_p), _cal(cz_o, cz_p), _cal(w_o, w_p)])
         # print("funcname: {:>25}\taddress: {:>12}, {:>12} \t CDD: {}".format(self.funcname,
         #                                                 self.address, cfg_p.address, CDD))
-        print("[+]funcname:{}".format(self.funcname))
+        comlog.debug("[+]cfg.same_with funcname:{}".format(self.funcname))
         # if self.funcname == 'print_dot11_mode' and CDD != 0.023400936037441523:
         #     import ipdb; ipdb.set_trace()
         # if CDD == 0:
-        if CDD <= 0.05:
-            return True
+        if CDD <= 0.01:
+            ret = True
         else:
-            return False
+            ret = False
+        comlog.debug('same_with :{}'.format(ret))
+        return ret
