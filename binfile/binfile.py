@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T15:47:40+08:00
+# @Last modified time: 2018-04-09T09:19:20+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
@@ -16,6 +16,7 @@ import sys
 sys.path.append("..")
 
 from setting import BINDIFF, JSONFILE, FUNCINFOSQL
+from log.mylog import comlog
 
 class BinFile(object):
     '''

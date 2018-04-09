@@ -5,12 +5,13 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T16:48:55+08:00
+# @Last modified time: 2018-04-09T09:25:35+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
 from cfg import CFG
 from block import Trace
+from seman import Semantic
 
 class Session(object):
     '''

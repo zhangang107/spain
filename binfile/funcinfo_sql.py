@@ -5,12 +5,13 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T16:27:19+08:00
+# @Last modified time: 2018-04-09T09:20:45+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
 from funcinfo_json import FunInfoJson
 from functools import wraps
+from binfile import comlog
 
 def _cumulate_item(item_list):
     '''
@@ -69,7 +70,7 @@ class FunInfoSql(object):
         def decorated(*args, **kwargs):
             self = args[0]
             if not self.db:
-                print('database is not exist')
+                comlog.error('database is not exist')
                 return None
             return f(*args, **kwargs)
         return decorated

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T16:53:10+08:00
+# @Last modified time: 2018-04-09T09:17:54+08:00
 # @Copyright: Copyright by USTC
 
 import angr
@@ -15,6 +15,7 @@ import copy
 import sys
 sys.path.append("..")
 from setting import ARCH
+from log.mylog import comlog
 
 '''
 语义分析：
@@ -63,7 +64,7 @@ class AngrEngine(object):
         elif cls.proj and cls.proj_file_path == file_path:
             return
         else:
-            print("something wrong")
+            comlog.debug("something wrong")
 
     def __sim_block(self, addr_start, addr_end, state=None):
 
@@ -78,7 +79,7 @@ class AngrEngine(object):
             st = (state.step(size=addr_end-addr_start)).all_successors[0]
             self.__copy_regs2state(st, state)
             # state.regs.set_state(st)
-            print '------->', state
+            comlog.debug('------->{}'.format(state))
             # print 'regs:\n'
             # print_reg(state, regs)
             ip += (self.proj.factory.block(ip)).size
@@ -112,7 +113,7 @@ class AngrEngine(object):
         打印寄存器与值
         '''
     	for reg in self.regs:
-    		print reg, s.regs.get(reg.lower())
+    		comlog.debug('{}, {}'.format(reg, s.regs.get(reg.lower())))
 
     def __copy_regs2state(self, s1, s2):
         '''
@@ -140,7 +141,7 @@ class AngrEngine(object):
             return
         state = self.__init_state(self.addrs[0][0])
         for addr in self.addrs:
-            print(hex(addr[0]), hex(addr[1]))
+            comlog.debug('{}, {}'.format(hex(addr[0]), hex(addr[1])))
             ip, state = self.__sim_block(addr[0], addr[1], state)
             state.ip = claripy.BVV(ip, 32)
         # print "last state:\n", state
