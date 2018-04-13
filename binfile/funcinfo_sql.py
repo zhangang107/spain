@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T15:05:41+08:00
+# @Last modified time: 2018-04-11T16:48:20+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -142,7 +142,7 @@ class FunInfoSql(object):
             return self._get_func_info(_nodes, funcname, isPatch=isPatch)
         elif isinstance(arg, str):
             funcname = arg
-            _nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNode=True)
+            _nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNodes=True)
             return self._get_func_info(_nodes, funcname, isPatch=isPatch)
 
     @check_db
