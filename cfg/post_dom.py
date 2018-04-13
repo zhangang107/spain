@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: post_dom.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-02T16:01:48+08:00
+# @Last modified time: 2018-04-13T10:26:38+08:00
 # @Copyright: Copyright by USTC
 
 import networkx as nx
@@ -44,6 +44,14 @@ class ContainerNode(object):
         if isinstance(other, ContainerNode):
             return self._obj == other._obj and self.index == other.index
         return False
+
+    def __repr__(self):
+        return self._obj
+
+    def __cmp__(self, other):
+        if isinstance(other, ContainerNode):
+            return cmp(self.obj, other.obj)
+        return 1
 
 class Dom(object):
     """
@@ -270,8 +278,10 @@ class Dom(object):
                 vertices.append(node)
 
                 # Put each successors into the stack
-                successors = graph.successors(node)
+                successors = list(graph.successors(node))
 
+                # 为解决乱序问题
+                successors.sort()
                 # Set the index property of it
                 node.index = counter
 
