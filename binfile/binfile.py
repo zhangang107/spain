@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T11:01:06+08:00
+# @Last modified time: 2018-04-10T11:12:03+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
@@ -71,7 +71,7 @@ class BinFile(object):
 
     def diff(self):
         '''
-        完成IDC调用和BinDiff调用，生成BinDiff数据库
+        完成IDC调用和BinDiff调用，生成BinDiff数据库，依赖于ida和bindiff(differ)
         '''
         self.bindiff.differ()
 
@@ -86,7 +86,7 @@ class BinFile(object):
 
     def init_funcinfo(self):
         '''
-        根据bindiff筛选结果生成函数信息数据库
+        根据bindiff筛选结果生成函数信息数据库，依赖于ida
         '''
         if self.cmpedaddrs is None:
             self.diff_filter()
