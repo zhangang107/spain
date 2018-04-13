@@ -5,11 +5,12 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: block_trace.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:35:16+08:00
+# @Last modified time: 2018-04-13T10:23:51+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 from collections import deque
 from log.mylog import comlog
+from simi_block import SimiBlock
 
 class Trace(object):
     '''
@@ -30,12 +31,13 @@ class Trace(object):
         self.tags = {}
         self.neighbors_o = None
         self.neighbors_p = None
+        self.simi_block = SimiBlock(self.graph_o, self.graph_p)
 
     def get_trace(self):
         '''
         轨迹算法主体
         '''
-        self.__match()
+        self._match()
         comlog.debug('blocks_p: {}'.format(self.blocks_p))
         comlog.debug('\n\ntags: {}'.format(self.tags))
         traces_p = self.__LinerConnectedComponents(self.blocks_p, 'P')
@@ -64,21 +66,37 @@ class Trace(object):
             nodes_p_list.append(partial_trace['trace_p'])
         return nodes_o_list, nodes_p_list
 
+    def _match(self):
+        '''
+        匹配函数
+        '''
+        tags, scores = self.simi_block.get_simi()
+        # print scores
+        # import ipdb; ipdb.set_trace()
+        # 调试自定义tags
+        # tags = {1:1,5:3, 6:4, 8:5, 9:6, 10:7, 11:8, 12:9, 13:10, 14:11}
+        self.tags = tags
+        self.blocks_p = [n for n in self.graph_p.nodes if n not in tags]
+
     def __match(self):
         '''
         遍历节点，并匹配对应节点
         '''
         graph_p = self.graph_p
         graph_o = self.graph_o
+        nodes_o = list(graph_o.nodes)
         for node in graph_p.nodes:
             FoundMatch = False
-            for node_o in graph_o.nodes:
+            for node_o in nodes_o:
                 if self.__node_same(graph_p.nodes[node], graph_o.nodes[node_o]):
                     FoundMatch = True
                     self.tags[node] = node_o
                     break
+            if FoundMatch:
+                nodes_o.remove(self.tags[node])
             if not FoundMatch:
                 self.blocks_p.append(node)
+
     def __node_same(self, node_p, node_o, cmp=None):
         '''
         cmp: 比较函数 定义节点相等（相似）
