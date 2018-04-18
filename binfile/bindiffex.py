@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:42:23+08:00
+# @Last modified time: 2018-04-18T16:03:37+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -122,6 +122,7 @@ class BinDiffEx(object):
             if status != 0:
                 comlog.error(output)
                 raise BinException('rename sql wrong!')
+        self._getattrs()
         return True
 
     def _getattrs(self):
