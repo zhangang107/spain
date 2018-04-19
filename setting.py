@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: setting.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-08T16:52:06+08:00
+# @Last modified time: 2018-04-19T16:38:57+08:00
 # @Copyright: Copyright by USTC
 
 import os
@@ -36,4 +36,4 @@ FUNCINFOSQL = {
 }
 
 # arch
-ARCH = 'arm'
+ARCH = 'mips'
