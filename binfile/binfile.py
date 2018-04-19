@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-18T16:05:51+08:00
+# @Last modified time: 2018-04-18T16:21:52+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
@@ -116,7 +116,7 @@ class BinFile(object):
         for nodes_o, nodes_p in zip(nodes_o_list, nodes_p_list):
             asms_o, addrs_o = self._get_single_smdata(func_o, nodes_o)
             asms_p, addrs_p = self._get_single_smdata(func_p, nodes_p)
-            seman_data.append((asms_o, asms_p, addrs_o, addrs_p))
+            seman_data.append((asms_o, asms_p, addrs_o, addrs_p, nodes_o, nodes_p))
         return seman_data
 
     def _get_single_smdata(self, func, nodes):
