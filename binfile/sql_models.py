@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: sql_models.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T10:25:30+08:00
+# @Last modified time: 2018-04-19T15:37:17+08:00
 # @Copyright: Copyright by USTC
 
 from sqlalchemy import Column, String, Integer, create_engine, text
@@ -42,7 +42,7 @@ class DataDb(object):
             self.dbstring = 'sqlite:///test_json.db'
         else:
             self.dbstring = 'sqlite:///{}'.format(self.dbstring)
-        self.engine = create_engine(self.dbstring， connect_args={'check_same_thread':False})
+        self.engine = create_engine(self.dbstring, connect_args={'check_same_thread':False})
         self.DBSession = sessionmaker(bind=self.engine)
         # self.session = self.DBSession()
         self.tbs_dict = {tb_nodes_o : NodeO, tb_nodes_p : NodeP,
