@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-18T16:22:12+08:00
+# @Last modified time: 2018-04-19T17:11:14+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
@@ -141,6 +141,10 @@ class Session(object):
             seman_result.append((_sem[2:6], cur_diff, is_security))
             comlog.info('[*]\033[40;43m {} \033[0m'.format(cur_diff))
         return seman_result
+
+    def init_func(self):
+        self._idc_bindiff()
+        self.binfile.init_funcinfo()
 
     def analysis(self):
         '''
