@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-18T15:57:40+08:00
+# @Last modified time: 2018-04-18T16:22:12+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile
@@ -131,14 +131,14 @@ class Session(object):
             if not _sem[0] or not _sem[1]:
                 # 为空跳过
                 continue
-            sim = Semantic(*_sem, load_args=self.filenames)
+            sim = Semantic(*_sem[0:4], load_args=self.filenames)
             cur_pre = sim.get_pre_state()
             cur_post = sim.get_post_state()
             # comlog.debug(cur_pre)
             # comlog.debug(cur_post)
             cur_diff = sim.get_semidiff()
             is_security = sim.get_diff_semantic()
-            seman_result.append((_sem[2:4], cur_diff, is_security))
+            seman_result.append((_sem[2:6], cur_diff, is_security))
             comlog.info('[*]\033[40;43m {} \033[0m'.format(cur_diff))
         return seman_result
 
