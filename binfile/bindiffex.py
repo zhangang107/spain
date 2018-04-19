@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-18T16:03:37+08:00
+# @Last modified time: 2018-04-19T16:59:27+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -73,7 +73,7 @@ class BinDiffEx(object):
                 except Exception as err:
                     exist = False
                     comlog.error('{} not exist, something wrong'.format(filename))
-                    comlog.error(err)
+                    comlog.error('error info: {}'.format(err))
         else:
             exist = False
         return exist
@@ -87,7 +87,8 @@ class BinDiffEx(object):
                 cmd = 'TVHEADLESS=1 idal -A -Sbindiff_export.idc {}'.format(filename)
                 (status, output) = commands.getstatusoutput(cmd)
                 if status != 0:
-                    comlog.error(output)
+                    comlog.error("call idc error")
+                    comlog.error('error info: {}'.format(output))
                     raise BinException('call idc wrong!')
         return True
 
@@ -114,13 +115,15 @@ class BinDiffEx(object):
             comlog.info(cmd)
             (status, output) = commands.getstatusoutput(cmd)
             if status != 0:
-                comlog.error(output)
+                comlog.error('differ error')
+                comlog.error('error info: {}'.format(output))
                 raise BinException('differ wrong!')
             rename_cmd = 'mv {0}/*.BinDiff {0}/{1}'.format(self.diff_dir, self.sql_name)
             comlog.info(rename_cmd)
             (status, output) = commands.getstatusoutput(rename_cmd)
             if status != 0:
-                comlog.error(output)
+                comlog.error('rename sql error')
+                comlog.error('error info: {}'.format(output))
                 raise BinException('rename sql wrong!')
         self._getattrs()
         return True
