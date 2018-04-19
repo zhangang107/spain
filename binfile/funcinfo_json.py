@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_json.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T14:22:20+08:00
+# @Last modified time: 2018-04-19T17:02:16+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import tb_nodes_o, tb_nodes_p, tb_asms_o, tb_asms_p
@@ -73,9 +73,11 @@ class FunInfoJson(object):
         self.out_json = os.path.join(self.json_dir, self.json_name)
         cmd = "TVHEADLESS=1 idal -A -S'{} {} {}' {} > /dev/null".format(self.script, \
                     address_str, self.out_json, self.filename)
+        comlog.debug(cmd)
         (status, output) = commands.getstatusoutput(cmd) # output 做debug用
         if status != 0: # 正常返回0
-            comlog.error(output)
+            comlog.error('IDAPython call error')
+            comlog.error('error info: {}'.format(output))
         return status
 
     def _check_file(self):
@@ -89,7 +91,7 @@ class FunInfoJson(object):
         except Exception as err:
             exist = False
             comlog.error("[error] {} not exist, something wrong".format(self.out_json))
-            comlog.error(err)
+            comlog.error('error info: {}'.format(err))
         return exist
 
     def json2sql(self, db):
