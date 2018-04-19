@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T17:35:32+08:00
+# @Last modified time: 2018-04-19T15:44:15+08:00
 # @Copyright: Copyright by USTC
 
 from seman_engine import SemanticEngine
@@ -75,7 +75,7 @@ class Semantic(object):
         self._state_p['post_state'] = self._engine_ins_p.get_post_state()
         return self._state_o['post_state'], self._state_p['post_state']
 
-    def get_diff_semantic(self, threshold):
+    def get_diff_semantic(self, threshold=0.1):
         '''
         获取语义判定
         '''
