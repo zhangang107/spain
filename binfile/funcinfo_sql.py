@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T15:26:43+08:00
+# @Last modified time: 2018-04-20T14:42:55+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
@@ -103,6 +103,8 @@ class FunInfoSql(object):
         '''
         依据数据库结果_nodes，构造函数图类所需节点nodes,边edges,以及函数名
         '''
+        if len(_nodes) == 0:
+            return funcname, 0, [], []
         edges = []
         nodes = {}
         for _n in _nodes:
