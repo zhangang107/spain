@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: func_graph.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T10:42:04+08:00
+# @Last modified time: 2018-04-20T10:10:18+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 
@@ -21,7 +21,7 @@ class FuncGraph(nx.DiGraph):
         self._nodes = nodes
         self._edges = edges
         self.isPatch = isPatch
-        if nodes and edges:
+        if nodes or edges:
             self._create(nodes, edges)
 
     def copy(self):
