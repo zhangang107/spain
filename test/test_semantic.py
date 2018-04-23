@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-13T16:51:57+08:00
+# @Last modified time: 2018-04-23T16:32:36+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -13,6 +13,7 @@ import os
 sys.path.append("..")
 from binfile import BinFile
 from seman import Semantic
+from block import Trace
 from setting import BASE_DIR
 
 file_o = os.path.join(BASE_DIR, 'data/binfile/openssl-arm-f')
@@ -20,8 +21,9 @@ file_p = os.path.join(BASE_DIR, 'data/binfile/openssl-arm-g')
 filenames = [file_o, file_p]
 
 bf = BinFile(filenames)
-# bf.diff()
+bf.diff()
 print bf.diff_filter()
+bf.init_funcinfo()
 
 # import ipdb; ipdb.set_trace()
 # graph_o, graph_p = bf.next_func_graphs().next()
@@ -42,13 +44,17 @@ print bf.diff_filter()
 # print sim.get_post_state()
 # print sim.get_semidiff()
 
-graph_o, graph_p = bf.get_func_graphs('dtls1_process_heartbeat')
+graph_o, graph_p = bf.get_func_graphs('tls1_process_heartbeat')
 t = Trace(graph_o, graph_p)
 trace = t.get_trace()
 nodes = t.traces2nodes()
 sem_data = bf.get_seman_data(*nodes)
 for _sem in sem_data:
-    sim = Semantic(*_sem, load_args=filenames)
+    # import ipdb; ipdb.set_trace()
+    sim = Semantic(*_sem[0:4], load_args=filenames)
+    print '---------------pre_state---------------------'
     print sim.get_pre_state()
+    print '---------------post_state---------------------'
     print sim.get_post_state()
+    print '---------------diff---------------------------'
     print sim.get_semidiff()
