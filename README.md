@@ -54,3 +54,8 @@ basicBlock: MD index matching (bottom up)
 ```
 0 和 0`是不匹配的
     他们下面有两个分支。
+
+
+
+angr过程中，出现 IR decoding 错误
+原因： proj文件与 state 参数地址不匹配。 将_o文件的地址传给了_p文件
