@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T16:59:27+08:00
+# @Last modified time: 2018-04-19T17:33:10+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -21,6 +21,13 @@ differ_dir = os.path.join(BASE_DIR,'spain')
 class BinException(Exception):
     def __init__(self, msg):
         self.msg = msg
+
+def _eval_name(filename):
+        '''
+        debug 出现新问题，二进制文件名带后缀的情况下，如'my_cgi07.cgi'，生成的BinExport文件为'my_cgi07.BinExport',即会去掉后缀名
+        为解决上述问题添加 _eval_name函数，只取文件名前缀
+        '''
+        return filename.split('.')[0]
 
 class BinDiffEx(object):
     '''
@@ -107,8 +114,8 @@ class BinDiffEx(object):
         '''
         self._split_file()
         export_files = []
-        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self._efilenames['origin']))
-        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(self._efilenames['patch']))
+        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(_eval_name(self._efilenames['origin'])))
+        export_files.append('/tmp/zynamics/BinExport/{}.BinExport'.format(_eval_name(self._efilenames['patch'])))
         if self._check_files(export_files):
             cmd = '{0}/differ --primary={1} --secondary={2} --output_dir={3}'.format(
                         differ_dir, export_files[0], export_files[1], self.diff_dir)
