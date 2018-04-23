@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T17:35:22+08:00
+# @Last modified time: 2018-04-23T16:48:33+08:00
 # @Copyright: Copyright by USTC
 
 import angr
@@ -22,6 +22,7 @@ from log.mylog import comlog
     分析 寄存器(reg)、内存位置(mem)、标志位(flag)的变化
 由于汇编码运行模拟器的实现过于复杂，暂使用angr语义分析模块完成大部分工作即寄存器值的变化
     angr对标志位的变化有所涉及，可试用SimState.regs.flags.chop()[0:4]只涉及4个标志位(n,z,c,v)
+    补充： mips下，angr中 SimState.regs 没有 flags属性
     angr对内存位置不够友好，因此内存位置暂使用自定义分析
 '''
 class AngrEngine(object):
@@ -51,20 +52,21 @@ class AngrEngine(object):
     proj = None
     proj_file_path = None
     def __init__(self, file_path=None):
-        self.__init_proj(file_path)
+        # self.__init_proj(file_path)
+        self.proj = angr.Project(file_path)
 
-    @classmethod
-    def __init_proj(cls, file_path):
-        '''
-        使用类变量，检查proj是否已经创建，没有才创建
-        '''
-        if not cls.proj or not cls.proj_file_path:
-            cls.proj = angr.Project(file_path)
-            cls.file_path = file_path
-        elif cls.proj and cls.proj_file_path == file_path:
-            return
-        else:
-            comlog.debug("something wrong")
+    # @classmethod
+    # def __init_proj(cls, file_path):
+    #     '''
+    #     使用类变量，检查proj是否已经创建，没有才创建
+    #     '''
+    #     if not cls.proj or not cls.proj_file_path:
+    #         cls.proj = angr.Project(file_path)
+    #         cls.file_path = file_path
+    #     elif cls.proj and cls.proj_file_path == file_path:
+    #         return
+    #     else:
+    #         comlog.debug("something wrong")
 
     def __sim_block(self, addr_start, addr_end, state=None):
 
@@ -73,10 +75,10 @@ class AngrEngine(object):
             state.ip = claripy.BVV(ip, 32)
             # print 'ip:', state.ip
             # print 'size:', addr_end-addr_start
-            s = self.proj.factory.blank_state()
-            s.ip = claripy.BVV(ip, 32)
+            # s_tmp = self.proj.factory.blank_state()
+            # s_tmp.ip = claripy.BVV(ip, 32)
             # state = (self.proj.factory.successors(state, size=addr_end-addr_start)).all_successors[0]
-            st = (state.step(size=addr_end-addr_start)).all_successors[0]
+            st = (state.step(size=addr_end-ip, jumpkind='Ijk_Boring')).all_successors[0]
             self.__copy_regs2state(st, state)
             # state.regs.set_state(st)
             comlog.debug('------->{}'.format(state))
@@ -104,9 +106,12 @@ class AngrEngine(object):
         return self.regs
 
     def __eval_update_flag(self, SimState):
-        for k, v in zip(self.flag, SimState.regs.flags.chop()[0:4]):
-            self.flag[k] = SimState.solver.eval(v)
-        return self.flag
+        if not hasattr(SimState.regs, 'flags'):
+            return self.flag
+        else:
+            for k, v in zip(self.flag, SimState.regs.flags.chop()[0:4]):
+                self.flag[k] = SimState.solver.eval(v)
+            return self.flag
 
     def print_reg(self, s):
         '''
@@ -125,7 +130,8 @@ class AngrEngine(object):
             reg = reg.lower()
             value = s1.registers.load(reg)
             s2.registers.store(reg, value)
-        s2.regs.flags = s1.regs.flags
+        if hasattr(s1.regs, 'flags'):
+            s2.regs.flags = s1.regs.flags
 
     def update_state_from_addrs(self, addrs, pre_state):
         '''
@@ -217,7 +223,7 @@ class SemanticEngine(object):
     @classmethod
     def check_reg_mips(cls, word):
         # mips 寄存器
-        # 以$开头
+        # 以$开头, 要去掉$
         matchObj = re.search(r'^(\$\w+)', word, re.M|re.I)
         return matchObj and True or False
 
@@ -252,6 +258,15 @@ class SemanticEngine(object):
         elif self._arch == 'mips':
             return self.check_reg_mips(word)
 
+    def _eval_reg(self, reg):
+        '''
+        格式处理寄存器名，其实是在mips测试中发现$s0 属性bug,需要去掉$
+        '''
+        if self._arch == 'mips':
+            return reg[1:]
+        else:
+            return reg
+
     def __init_state(self):
         '''
         初始化状态，可获取pre_state,与具体架构有关
@@ -264,6 +279,6 @@ class SemanticEngine(object):
                 if self.__check_mem(word) and word not in mem:
                     mem.add(word)
                 for word in [a for a in re.split(' |,|\[|\]', asm) if a]:
-                    if self.__check_reg(word) and word not in reg:
-                        reg[word] = 0
+                    if self.__check_reg(word) and self._eval_reg(word) not in reg:
+                        reg[self._eval_reg(word)] = 0
         self.__pre_state = {'reg':reg, 'flag':flag, 'mem':mem}
