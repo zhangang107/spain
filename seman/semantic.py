@@ -5,11 +5,11 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-23T16:43:56+08:00
+# @Last modified time: 2018-04-24T09:58:10+08:00
 # @Copyright: Copyright by USTC
 
 from seman_engine import SemanticEngine
-from log.mylog import comlog
+from spain import comlog
 
 class Semantic(object):
     '''

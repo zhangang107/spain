@@ -5,16 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: mylog.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-07T21:14:03+08:00
+# @Last modified time: 2018-04-24T09:57:06+08:00
 # @Copyright: Copyright by USTC
 
 import logging
 from logging import Logger, FileHandler, Formatter, StreamHandler
 import os
 import time
-import sys
-sys.path.append("..")
-from setting import BASE_DIR
+from spain import BASE_DIR
 
 logdir = os.path.join(BASE_DIR, 'log')
 date = time.strftime('%Y-%m-%d')

@@ -5,18 +5,15 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_json.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T17:02:16+08:00
+# @Last modified time: 2018-04-24T09:54:01+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import tb_nodes_o, tb_nodes_p, tb_asms_o, tb_asms_p
 import os
-import sys
 import commands
 import json
 
-sys.path.append('../')
-from setting import BASE_DIR
-from log import comlog
+from spain import BASE_DIR, comlog
 
 class FunInfoJson(object):
     '''

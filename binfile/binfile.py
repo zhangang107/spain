@@ -5,18 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-20T10:07:24+08:00
+# @Last modified time: 2018-04-24T09:52:07+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
 from func_graph import FuncGraph
+from spain import BINDIFF, JSONFILE, FUNCINFOSQL, comlog
 
-import os
-import sys
-sys.path.append("..")
-
-from setting import BINDIFF, JSONFILE, FUNCINFOSQL
-from log import comlog
+from os
 
 class BinFile(object):
     '''

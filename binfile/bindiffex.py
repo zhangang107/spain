@@ -5,17 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T17:33:10+08:00
+# @Last modified time: 2018-04-24T09:49:35+08:00
 # @Copyright: Copyright by USTC
 
 import commands
 import sqlite3
 import os
-import sys
+from spain import BASE_DIR, comlog
 
-sys.path.append('../')
-from setting import BASE_DIR
-from log import comlog
 differ_dir = os.path.join(BASE_DIR,'spain')
 
 class BinException(Exception):

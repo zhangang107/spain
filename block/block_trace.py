@@ -5,12 +5,12 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: block_trace.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-13T10:23:51+08:00
+# @Last modified time: 2018-04-24T09:55:15+08:00
 # @Copyright: Copyright by USTC
 import networkx as nx
 from collections import deque
-from log.mylog import comlog
 from simi_block import SimiBlock
+from spain import comlog
 
 class Trace(object):
     '''
