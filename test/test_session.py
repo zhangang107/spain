@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-19T17:00:58+08:00
+# @Last modified time: 2018-04-24T09:19:40+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -23,3 +23,4 @@ filenames = [file_o, file_p]
 session = Session(filenames)
 session.init_func()
 session.analysis()
+print len(session.candidate_func)

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-23T16:32:36+08:00
+# @Last modified time: 2018-04-23T17:00:50+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -50,7 +50,6 @@ trace = t.get_trace()
 nodes = t.traces2nodes()
 sem_data = bf.get_seman_data(*nodes)
 for _sem in sem_data:
-    # import ipdb; ipdb.set_trace()
     sim = Semantic(*_sem[0:4], load_args=filenames)
     print '---------------pre_state---------------------'
     print sim.get_pre_state()
