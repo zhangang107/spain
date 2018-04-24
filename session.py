@@ -5,10 +5,10 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-24T10:39:20+08:00
+# @Last modified time: 2018-04-24T10:43:02+08:00
 # @Copyright: Copyright by USTC
 
-from binfile import BinFile， FuncGraph
+from binfile import BinFile, FuncGraph
 from cfg import CFG
 from block import Trace
 from seman import Semantic
