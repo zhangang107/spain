@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: bindiffex.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T09:42:23+08:00
+# @Last modified time: 2018-04-18T10:17:12+08:00
 # @Copyright: Copyright by USTC
 
 import commands
@@ -13,9 +13,9 @@ import sqlite3
 import os
 import sys
 
-sys.path.append('../')
-from setting import BASE_DIR
-from log import comlog
+# sys.path.append('../')
+from spain import BASE_DIR, comlog
+# from log import comlog
 differ_dir = os.path.join(BASE_DIR,'spain')
 
 class BinException(Exception):
@@ -122,6 +122,7 @@ class BinDiffEx(object):
             if status != 0:
                 comlog.error(output)
                 raise BinException('rename sql wrong!')
+        self._getattrs()
         return True
 
     def _getattrs(self):

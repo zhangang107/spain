@@ -5,12 +5,13 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: funcinfo_sql.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-11T16:48:20+08:00
+# @Last modified time: 2018-04-19T15:25:14+08:00
 # @Copyright: Copyright by USTC
 
 from sql_models import DataDb
 from funcinfo_json import FunInfoJson, comlog
 from functools import wraps
+import os
 
 def _cumulate_item(item_list):
     '''
@@ -58,6 +59,9 @@ class FunInfoSql(object):
         '''
         建立库表
         '''
+        # 添加删除存在的旧库
+        if os.path.isfile(sql_name):
+            os.remove(sql_name)
         cls.db = DataDb(sql_name)
         cls.db.create_tb()
 
@@ -151,7 +155,7 @@ class FunInfoSql(object):
         查询获取节点列表
         '''
         _node = self.query_node(address, isPatch)
-        funcname = _node.funcname
+        funcname = _node.funcname.encode('utf-8')
         nodes = self.db.query_nodes(funcname, isPatch=isPatch, isNodes=True)
         return nodes, funcname
 

@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: getinfo_fromIDA.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-03-30T14:49:29+08:00
+# @Last modified time: 2018-04-18T14:20:02+08:00
 # @Copyright: Copyright by USTC
 
 from idaapi import *
@@ -140,7 +140,7 @@ for _addres in addres.split(','):
     funcs.append(finfo.getfunc())
 
 data = {'funcs': funcs}
-with open(ouput_filename, 'a+') as f:
+with open(ouput_filename, 'w') as f:
     json.dump(data, f, sort_keys=True)
 
 idc.Exit(0)

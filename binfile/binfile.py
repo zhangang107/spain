@@ -5,18 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: binfile.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-10T11:12:03+08:00
+# @Last modified time: 2018-04-18T16:01:59+08:00
 # @Copyright: Copyright by USTC
 from bindiffex import BinDiffEx
 from funcinfo_sql import FunInfoSql
 from func_graph import FuncGraph
 
 import os
-import sys
-sys.path.append("..")
-
-from setting import BINDIFF, JSONFILE, FUNCINFOSQL
-from log import comlog
+from spain import BINDIFF, JSONFILE, FUNCINFOSQL, comlog
 
 class BinFile(object):
     '''
@@ -36,6 +32,7 @@ class BinFile(object):
         @param funcinfo_dir 最终函数信息数据库路径
         '''
         self.filenames = filenames
+        self.exefilenames = []
         self.diff_threshold = diff_threshold
         self.diff_dir = diff_dir
         self.sql_name = sql_name
@@ -68,12 +65,15 @@ class BinFile(object):
             self.funcinfo_dir = FUNCINFOSQL['FUNC_INFO_DIR']
         if self.funcinfo_name is None:
             self.funcinfo_name = FUNCINFOSQL['FUNC_INFO_NAME']
+        for i in range(len(self.filenames)):
+            self.exefilenames.append(os.path.split(self.filenames[i])[-1])
 
     def diff(self):
         '''
         完成IDC调用和BinDiff调用，生成BinDiff数据库，依赖于ida和bindiff(differ)
         '''
         self.bindiff.differ()
+        self.cmp_func_sum = self.bindiff.cmp_func_sum
 
     def diff_filter(self, threshold=None):
         '''

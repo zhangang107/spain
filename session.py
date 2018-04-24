@@ -5,10 +5,10 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T16:59:18+08:00
+# @Last modified time: 2018-04-18T15:58:54+08:00
 # @Copyright: Copyright by USTC
 
-from binfile import BinFile
+from binfile import BinFile, FuncGraph
 from cfg import CFG
 from block import Trace
 from seman import Semantic
@@ -60,11 +60,14 @@ class Session(object):
         '''
         idc以及Bindiff调用，生成BinDiff数据库
         '''
+        self.exefilenames = self.binfile.exefilenames
         self.binfile.diff()
+        self.cmp_func_sum = self.binfile.cmp_func_sum
 
     def bin_filter(self, threshold=None):
         '''
         BinDiff筛选，获取初始候选函数
+        @return 返回初始候选函数表长度
         '''
         return self.binfile.diff_filter(threshold)
 
@@ -78,6 +81,9 @@ class Session(object):
         elif isinstance(arg, int) or isinstance(arg, str):
             # 按地址或函数名获取指定候选函数
             self.cur_func['origin'], self.cur_func['patch'] = self.binfile.get_func_graphs(arg)
+        elif isinstance(arg, list) and isinstance(arg[0], FuncGraph):
+            # 直接传递候选函数
+            self.cur_func['origin'], self.cur_func['patch'] = arg[0], arg[1]
         self.cfg['origin'] = CFG(self.cur_func['origin'])
         self.cfg['patch'] = CFG(self.cur_func['patch'])
         funcname = self.cfg['origin'].funcname
@@ -94,14 +100,23 @@ class Session(object):
         '''
         补丁基本块定位
         '''
-        self.cur_blocks['funcname'] = self.cfg['origin'].funcname
-        self.cur_blocks['address_o'] = self.cfg['origin'].address
-        self.cur_blocks['address_p'] = self.cfg['patch'].address
-        traces = Trace(self.cfg['origin'].func_graph, self.cfg['patch'].func_graph)
+        if arg is None:
+            # 无参调用,调用当前图
+            self.cur_blocks['funcname'] = self.cfg['origin'].funcname
+            self.cur_blocks['address_o'] = self.cfg['origin'].address
+            self.cur_blocks['address_p'] = self.cfg['patch'].address
+            traces = Trace(self.cfg['origin'].func_graph, self.cfg['patch'].func_graph)
+        elif isinstance(arg, tuple):
+            # 传入函数名和地址调用，参数的格式为('funcname':{'origin':address1, 'patch': address2})
+            self.cur_blocks['funcname'] = arg[0]
+            self.cur_blocks['address_o'] = arg[1]['origin']
+            self.cur_blocks['address_p'] = arg[1]['patch']
+            func_o, func_p = self.binfile.get_func_graphs(arg[0])
+            traces = Trace(func_o, func_p)
         self.cur_blocks['traces'] = traces.get_trace()
         self.cur_blocks['traces_nodes'] = traces.traces2nodes()
         comlog.info('funcname: {}'.format(self.cur_blocks['funcname']))
-        # comlog.info('cur_blocks {}'.format(self.cur_blocks))
+        comlog.info('cur_blocks {}'.format(self.cur_blocks))
         return len(self.cur_blocks['traces_nodes'])
 
     def seman_analysis(self):
@@ -110,6 +125,7 @@ class Session(object):
         '''
         nodes_o_list, nodes_p_list = self.cur_blocks['traces_nodes']
         sem_data = self.binfile.get_seman_data(nodes_o_list, nodes_p_list)
+        seman_result = []
         for _sem in sem_data:
             # comlog.info('nodes {}'.format(_sem))
             if not _sem[0] or not _sem[1]:
@@ -121,7 +137,10 @@ class Session(object):
             # comlog.debug(cur_pre)
             # comlog.debug(cur_post)
             cur_diff = sim.get_semidiff()
+            is_security = sim.get_diff_semantic()
+            seman_result.append((_sem[2:4], cur_diff, is_security))
             comlog.info('[*]\033[40;43m {} \033[0m'.format(cur_diff))
+        return seman_result
 
     def analysis(self):
         '''

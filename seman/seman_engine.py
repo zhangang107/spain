@@ -5,17 +5,14 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T17:35:22+08:00
+# @Last modified time: 2018-04-16T15:50:46+08:00
 # @Copyright: Copyright by USTC
 
 import angr
 import claripy
 import re
 import copy
-import sys
-sys.path.append("..")
-from setting import ARCH
-from log.mylog import comlog
+from spain import ARCH, comlog
 
 '''
 语义分析：

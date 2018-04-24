@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: test_blocks.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-11T16:39:40+08:00
+# @Last modified time: 2018-04-13T16:29:19+08:00
 # @Copyright: Copyright by USTC
 
 import sys
@@ -33,6 +33,7 @@ print bf.diff_filter()
 貌似要修改匹配正确率
 '''
 graph_o, graph_p = bf.get_func_graphs('dtls1_process_heartbeat')
+# import ipdb; ipdb.set_trace()
 t = Trace(graph_o, graph_p)
 print t.get_trace()
 print t.traces2nodes()

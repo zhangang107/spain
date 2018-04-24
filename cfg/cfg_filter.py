@@ -5,13 +5,13 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: cfg_filter.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-09T16:49:22+08:00
+# @Last modified time: 2018-04-16T15:48:27+08:00
 # @Copyright: Copyright by USTC
 
 from post_dom import Dom
 import networkx as nx
 from operator import itemgetter
-from log.mylog import comlog
+from spain import comlog
 
 class CFG(object):
     '''
