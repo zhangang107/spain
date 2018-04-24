@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: session.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-24T10:43:02+08:00
+# @Last modified time: 2018-04-24T14:59:21+08:00
 # @Copyright: Copyright by USTC
 
 from binfile import BinFile, FuncGraph
@@ -117,7 +117,7 @@ class Session(object):
         self.cur_blocks['traces_nodes'] = traces.traces2nodes()
         comlog.info('funcname: {}'.format(self.cur_blocks['funcname']))
         comlog.info('cur_blocks {}'.format(self.cur_blocks))
-        return len(self.cur_blocks['traces_nodes'])
+        return len(self.cur_blocks['traces_nodes'][0])
 
     def seman_analysis(self):
         '''
