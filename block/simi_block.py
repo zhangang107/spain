@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: simi_block.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-13T09:37:58+08:00
+# @Last modified time: 2018-04-25T11:23:21+08:00
 # @Copyright: Copyright by USTC
 
 '''
@@ -77,7 +77,6 @@ class SimiBlock(object):
                     dp[i][j] = dp[i-1][j-1] + 1
                 else:
                     dp[i][j] = max([dp[i-1][j], dp[i][j-1]])
-
         return dp[len(block1)][len(block2)]*2 / (len(block1)+len(block2))
 
     def _similarity_with_content(self):
