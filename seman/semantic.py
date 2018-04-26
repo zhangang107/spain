@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-24T09:58:10+08:00
+# @Last modified time: 2018-04-26T11:14:46+08:00
 # @Copyright: Copyright by USTC
 
 from seman_engine import SemanticEngine
@@ -36,6 +36,7 @@ class Semantic(object):
         self._state_p = {'pre_state':None, 'post_state':None}
         self._init_engine()
         self._load_resource(load_args)
+        self._diffrota = None
 
     @property
     def engine(self):
@@ -79,8 +80,9 @@ class Semantic(object):
         '''
         获取语义判定
         '''
-        diffrota = self.get_semidiff()
-        if diffrota > 0 and diffrota < threshold:
+        if self._diffrota is None:
+            self.get_semidiff()
+        if self._diffrota > 0 and self._diffrota < threshold:
             return True
         else:
             return False
@@ -109,4 +111,5 @@ class Semantic(object):
                 difference += 1
         diffrota = difference / float(count)
         comlog.debug('diffrota: {}'.format(diffrota))
+        self._diffrota = diffrota
         return diffrota

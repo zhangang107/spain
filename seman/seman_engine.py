@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: seman_engine.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-24T09:57:46+08:00
+# @Last modified time: 2018-04-26T10:58:06+08:00
 # @Copyright: Copyright by USTC
 
 import angr
@@ -78,7 +78,7 @@ class AngrEngine(object):
             st = (state.step(size=addr_end-ip, jumpkind='Ijk_Boring')).all_successors[0]
             self.__copy_regs2state(st, state)
             # state.regs.set_state(st)
-            comlog.debug('------->{}'.format(state))
+            # comlog.debug('------->{}'.format(state))
             # print 'regs:\n'
             # print_reg(state, regs)
             ip += (self.proj.factory.block(ip)).size
