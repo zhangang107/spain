@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: semantic.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-26T11:14:46+08:00
+# @Last modified time: 2018-04-26T15:26:40+08:00
 # @Copyright: Copyright by USTC
 
 from seman_engine import SemanticEngine
@@ -99,11 +99,11 @@ class Semantic(object):
         comlog.debug(post_state_p)
         for reg in post_state_p['reg']:
             count += 1
-            if reg not in post_state_o['reg'] or post_state_p['reg'] != post_state_o['reg']:
+            if reg not in post_state_o['reg'] or post_state_p['reg'][reg] != post_state_o['reg'][reg]:
                 difference += 1
         for flag in post_state_p['flag']:
             count += 1
-            if flag not in post_state_o['flag'] or post_state_p['flag'] != post_state_o['flag']:
+            if flag not in post_state_o['flag'] or post_state_p['flag'][flag] != post_state_o['flag'][flag]:
                 difference += 1
         for mem in post_state_p['mem']:
             count += 1
