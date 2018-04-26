@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: simi_block.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-25T11:23:21+08:00
+# @Last modified time: 2018-04-26T10:07:59+08:00
 # @Copyright: Copyright by USTC
 
 '''
@@ -45,16 +45,43 @@ class SimiBlock(object):
         self.scores = self._similarity_with_content()
         self._n_scores = {}
         scores = []
+        # print self.scores
         for nodep in self.scores:
             nodep_dic = self.scores[nodep]
             nd = sorted(nodep_dic.items(), key=lambda item:item[1], reverse=True)
             self._n_scores[nodep] = nd
+        # print self._n_scores
+        self.filter_same(threshold)
+        # print '-----after filter_same------'
+        # print self._n_scores
+        for nodep in self._n_scores:
+            nd = self._n_scores[nodep]
             # 直接获取匹配度最高且>threshold的，组成tags
-            if len(nd)>0:
-                if nd[0][1]>threshold:
+            if len(nd) > 0:
+                if nd[0][1] >= threshold:
                     tags[nodep] = nd[0][0]
                     scores.append([{'nodep':nodep, 'nodeo':nd[0][0], 'score':nd[0][1]}])
         return tags , scores
+
+    def filter_same(self, threshold):
+        '''
+        做剔除，防止两个匹配到同一个原节点
+        当多个补丁节点的最高匹配指向同一个节点时，应当采取策略
+        方法1：
+            先将所有的节点scores按相似度排序，依次比较，若存在指向相同，则剔除较小者，
+        '''
+        length = len(self._n_scores)
+        for i in xrange(length):
+            for j in xrange(length):
+                nodep1 = self._n_scores.keys()[i]
+                nodep2 = self._n_scores.keys()[j]
+                if nodep1 != nodep2 and len(self._n_scores[nodep1]) > 0 and len(self._n_scores[nodep2])>0:
+                    if self._n_scores[nodep1][0][0] == self._n_scores[nodep2][0][0] and \
+                            min(self._n_scores[nodep1][0][1], self._n_scores[nodep2][0][1]) >= threshold:
+                        if self._n_scores[nodep1][0][1] >= self._n_scores[nodep2][0][1]:
+                            self._n_scores[nodep2].pop(0)
+                        else:
+                            self._n_scores[nodep1].pop(0)
 
     def _get_block(self, graph, n):
         '''
@@ -77,13 +104,14 @@ class SimiBlock(object):
                     dp[i][j] = dp[i-1][j-1] + 1
                 else:
                     dp[i][j] = max([dp[i-1][j], dp[i][j-1]])
-        return dp[len(block1)][len(block2)]*2 / (len(block1)+len(block2))
+        return dp[len(block1)][len(block2)]*2.0 / (len(block1)+len(block2))
 
     def _similarity_with_content(self):
         '''
         根据上下文信息重新计算相似度
         '''
         naive_score_rate = 0.8 #原来的得分占比重
+        ignore_child_score = 0.6 #可忽略的后继节点阈值
         scores = {}
         scores_P_O = self.scores_P_O
         #算法待优化
@@ -97,11 +125,11 @@ class SimiBlock(object):
                 if len(child_nodesO) == 0 or len(child_nodesP) == 0:
                     scores[nodeid_P][nodeid_O] /= 0.9
                     continue
-                child_rate = (1- naive_score_rate)/(len(child_nodesO)+len(child_nodesP))
+                child_rate = (1- naive_score_rate)/(len(child_nodesO)*len(child_nodesP))
                 for p in child_nodesP:
                     for o in child_nodesO:
                         # 如果后继节点相似度太低，不计入得分 2018年04月09日11:28:31
-                        if scores_P_O[int(p)][int(o)] < naive_score_rate:
+                        if scores_P_O[int(p)][int(o)] < ignore_child_score:
                             continue
                         scores[nodeid_P][nodeid_O] += child_rate*scores_P_O[int(p)][int(o)]
         return scores
