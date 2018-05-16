@@ -5,7 +5,7 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: simi_block.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-26T10:07:59+08:00
+# @Last modified time: 2018-05-07T15:28:42+08:00
 # @Copyright: Copyright by USTC
 
 '''
@@ -68,20 +68,26 @@ class SimiBlock(object):
         做剔除，防止两个匹配到同一个原节点
         当多个补丁节点的最高匹配指向同一个节点时，应当采取策略
         方法1：
-            先将所有的节点scores按相似度排序，依次比较，若存在指向相同，则剔除较小者，
+            先将所有的节点scores按相似度排序，依次比较，若存在指向相同，则剔除较小者
+            2018年05月07日修正：直到没有相同才停止算法
         '''
         length = len(self._n_scores)
-        for i in xrange(length):
-            for j in xrange(length):
-                nodep1 = self._n_scores.keys()[i]
-                nodep2 = self._n_scores.keys()[j]
-                if nodep1 != nodep2 and len(self._n_scores[nodep1]) > 0 and len(self._n_scores[nodep2])>0:
-                    if self._n_scores[nodep1][0][0] == self._n_scores[nodep2][0][0] and \
-                            min(self._n_scores[nodep1][0][1], self._n_scores[nodep2][0][1]) >= threshold:
-                        if self._n_scores[nodep1][0][1] >= self._n_scores[nodep2][0][1]:
-                            self._n_scores[nodep2].pop(0)
-                        else:
-                            self._n_scores[nodep1].pop(0)
+        while True:
+            no_same = True
+            for i in xrange(length):
+                for j in xrange(length):
+                    nodep1 = self._n_scores.keys()[i]
+                    nodep2 = self._n_scores.keys()[j]
+                    if nodep1 != nodep2 and len(self._n_scores[nodep1]) > 0 and len(self._n_scores[nodep2])>0:
+                        if self._n_scores[nodep1][0][0] == self._n_scores[nodep2][0][0] and \
+                                min(self._n_scores[nodep1][0][1], self._n_scores[nodep2][0][1]) >= threshold:
+                            no_same = False
+                            if self._n_scores[nodep1][0][1] >= self._n_scores[nodep2][0][1]:
+                                self._n_scores[nodep2].pop(0)
+                            else:
+                                self._n_scores[nodep1].pop(0)
+            if no_same:
+                break
 
     def _get_block(self, graph, n):
         '''
