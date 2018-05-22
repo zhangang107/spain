@@ -5,13 +5,16 @@
 # @Email:  zhanganguc@gmail.com
 # @Filename: setting.py
 # @Last modified by:   zhangang
-# @Last modified time: 2018-04-20T14:24:14+08:00
+# @Last modified time: 2018-05-22T15:22:23+08:00
 # @Copyright: Copyright by USTC
 
 import os
 
 # SPAIN项目路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 默认二进制文件存储相对BASE_DIR路径
+BIN_DIR = 'data/binfile'
 
 # 输出文件目录相对BASE_DIR路径
 OUT_DIR = 'data/output'
